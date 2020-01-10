@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=org.gnome.clocks
-Exec=@bindir@/gnome-clocks --gapplication-service

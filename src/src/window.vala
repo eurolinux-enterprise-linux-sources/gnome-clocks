@@ -18,12 +18,14 @@
 
 namespace Clocks {
 
-[GtkTemplate (ui = "/org/gnome/clocks/ui/window.ui")]
 public class Window : Gtk.ApplicationWindow {
+    // Default size is enough for two rows of three clocks
+    private const int DEFAULT_WIDTH = 870;
+    private const int DEFAULT_HEIGHT = 680;
+
     private const GLib.ActionEntry[] action_entries = {
         // app menu
         { "new", on_new_activate },
-        { "help", on_help_activate },
         { "about", on_about_activate },
 
         // selection menu
@@ -31,62 +33,40 @@ public class Window : Gtk.ApplicationWindow {
         { "select-none", on_select_none_activate }
     };
 
-    [GtkChild]
     private HeaderBar header_bar;
-    [GtkChild]
-    private Gtk.Stack stack;
-    [GtkChild]
-    private Gtk.StackSwitcher stack_switcher;
-    private GLib.Settings settings;
-    private Gtk.Widget[] panels;
+    private Gd.Stack stack;
+    private World.MainPanel world;
+    private Alarm.MainPanel alarm;
+    private Stopwatch.MainPanel stopwatch;
+    private Timer.MainPanel timer;
 
     public Window (Application app) {
-        Object (application: app);
+        Object (application: app, title: _("Clocks"));
 
+        set_hide_titlebar_when_maximized (true);
         add_action_entries (action_entries, this);
 
-        settings = new Settings ("org.gnome.clocks.state.window");
-        settings.delay ();
+        set_size_request (DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-        destroy.connect(() => {
-            settings.apply ();
-        });
+        var builder = Utils.load_ui ("window.ui");
 
-        // Setup window geometry saving
-        Gdk.WindowState window_state = (Gdk.WindowState)settings.get_int ("state");
-        if (Gdk.WindowState.MAXIMIZED in window_state) {
-            maximize ();
-        }
+        var main_panel = builder.get_object ("main_panel") as Gtk.Widget;
+        header_bar = builder.get_object ("header_bar") as HeaderBar;
+        stack = builder.get_object ("stack") as Gd.Stack;
 
-        int width, height;
-        settings.get ("size", "(ii)", out width, out height);
-        resize (width, height);
-        set_title (_("Clocks"));
+        world = new World.MainPanel (header_bar);
+        alarm = new Alarm.MainPanel (header_bar);
+        stopwatch = new Stopwatch.MainPanel (header_bar);
+        timer = new Timer.MainPanel (header_bar);
 
-        panels = new Gtk.Widget[N_PANELS];
+        stack.add_titled (world, world.label, world.label);
+        stack.add_titled (alarm, alarm.label, alarm.label);
+        stack.add_titled (stopwatch, stopwatch.label, stopwatch.label);
+        stack.add_titled (timer, timer.label, timer.label);
 
-        panels[PanelId.WORLD] = new World.Face (header_bar);
-        panels[PanelId.ALARM] =  new Alarm.Face (header_bar);
-        panels[PanelId.STOPWATCH] = new Stopwatch.Face (header_bar);
-        panels[PanelId.TIMER] = new Timer.Face (header_bar);
-
-        var world = (World.Face)panels[PanelId.WORLD];
-        var alarm = (Alarm.Face)panels[PanelId.ALARM];
-        var stopwatch = (Stopwatch.Face)panels[PanelId.STOPWATCH];
-        var timer = (Timer.Face)panels[PanelId.TIMER];
-
-        foreach (var clock in panels) {
-            stack.add_titled (clock, ((Clock)clock).label, ((Clock)clock).label);
-            ((Clock)clock).request_header_bar_update.connect (() => {
-                update_header_bar ();
-            });
-        }
-
-        stack_switcher.set_stack (stack);
+        header_bar.set_stack (stack);
 
         var stack_id = stack.notify["visible-child"].connect (() => {
-            var help_overlay = get_help_overlay ();
-            help_overlay.view_name = Type.from_instance(stack.visible_child).name();
             update_header_bar ();
         });
 
@@ -102,55 +82,18 @@ public class Window : Gtk.ApplicationWindow {
         });
 
         alarm.ring.connect ((w) => {
-            world.reset_view ();
             stack.visible_child = w;
-        });
-
-        stopwatch.notify["state"].connect ((w) => {
-            stack.child_set_property (stopwatch, "needs-attention", stopwatch.state == Stopwatch.Face.State.RUNNING);
         });
 
         timer.ring.connect ((w) => {
-            world.reset_view ();
             stack.visible_child = w;
         });
 
-        timer.notify["state"].connect ((w) => {
-            stack.child_set_property (timer, "needs-attention", timer.state == Timer.Face.State.RUNNING);
-        });
-
-        unowned Gtk.BindingSet binding_set = Gtk.BindingSet.by_class (get_class ());
-
-        // plain ctrl+page_up/down is easten by the scrolled window...
-        Gtk.BindingEntry.add_signal (binding_set,
-                                     Gdk.Key.Page_Up,
-                                     Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MOD1_MASK,
-                                     "change-page", 1,
-                                     typeof(int), -1);
-        Gtk.BindingEntry.add_signal (binding_set,
-                                     Gdk.Key.Page_Down,
-                                     Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MOD1_MASK,
-                                     "change-page", 1,
-                                     typeof(int), 1);
-
-        stack.visible_child = panels[settings.get_enum ("panel-id")];
-
+        stack.visible_child = world;
         update_header_bar ();
 
+        add (main_panel);
         show_all ();
-    }
-
-    [Signal(action = true)]
-    public virtual signal void change_page (int offset) {
-        int page;
-
-        stack.child_get (stack.visible_child, "position", out page);
-        page += offset;
-        if (page >= 0 && page < panels.length) {
-            stack.visible_child = panels[page];
-        } else {
-            stack.error_bell ();
-        }
     }
 
     private void on_new_activate () {
@@ -165,64 +108,13 @@ public class Window : Gtk.ApplicationWindow {
         ((Clock) stack.visible_child).activate_select_none ();
     }
 
-    public void show_world () {
-        ((World.Face) panels[PanelId.WORLD]).reset_view ();
-        stack.visible_child = panels[PanelId.WORLD];;
-    }
-
-    public void add_world_location (GWeather.Location location) {
-        ((World.Face) panels[PanelId.WORLD]).add_location (location);
-    }
-
     public override bool key_press_event (Gdk.EventKey event) {
         uint keyval;
-        bool handled = false;
-
-        if (((Gdk.Event)(event)).get_keyval (out keyval) && keyval == Gdk.Key.Escape) {
-            handled = ((Clock) stack.visible_child).escape_pressed ();
-        }
-
-        if (handled) {
-            return true;
+        if (((Gdk.Event*)(&event))->get_keyval (out keyval) && keyval == Gdk.Key.Escape) {
+            return ((Clock) stack.visible_child).escape_pressed ();
         }
 
         return base.key_press_event (event);
-    }
-
-    public override bool button_release_event (Gdk.EventButton event) {
-        const uint BUTTON_BACK = 8;
-        uint button;
-
-        if (((Gdk.Event)(event)).get_button (out button) && button == BUTTON_BACK) {
-            ((Clock) stack.visible_child).back ();
-            return true;
-        }
-
-        return base.button_release_event (event);
-    }
-
-    protected override bool configure_event (Gdk.EventConfigure event) {
-        if (get_realized () && !(Gdk.WindowState.MAXIMIZED in get_window ().get_state ())) {
-            int width, height;
-
-            get_size (out width, out height);
-            settings.set ("size", "(ii)", width, height);
-        }
-
-        return base.configure_event (event);
-    }
-
-    protected override bool window_state_event (Gdk.EventWindowState event) {
-        settings.set_int ("state", event.new_window_state);
-        return base.window_state_event (event);
-    }
-
-    private void on_help_activate () {
-        try {
-            Gtk.show_uri (get_screen (), "help:gnome-clocks", Gtk.get_current_event_time ());
-        } catch (Error e) {
-            warning (_("Failed to show help: %s"), e.message);
-        }
     }
 
     private void on_about_activate () {
@@ -236,7 +128,6 @@ public class Window : Gtk.ApplicationWindow {
             "Allan Day",
             "Piotr Drąg",
             "Emily Gonyer",
-            "Evgeny Bobkin",
             "Maël Lavault",
             "Seif Lotfy",
             "William Jon McCann",
@@ -248,8 +139,8 @@ public class Window : Gtk.ApplicationWindow {
         };
 
         Gtk.show_about_dialog (this,
-                               "program-name", _("Clocks"),
-                               "logo-icon-name", "org.gnome.clocks",
+                               "program-name", _("Gnome Clocks"),
+                               "logo-icon-name", "gnome-clocks",
                                "version", Config.VERSION,
                                "comments", _("Utilities to help you with the time."),
                                "copyright", copyright,
@@ -262,19 +153,11 @@ public class Window : Gtk.ApplicationWindow {
 
     private void update_header_bar () {
         header_bar.clear ();
-
         var clock = (Clock) stack.visible_child;
         if (clock != null) {
-            settings.set_enum ("panel-id", clock.panel_id);
             clock.update_header_bar ();
             ((Gtk.Widget) clock).grab_focus ();
         }
-
-        if (header_bar.mode == HeaderBar.Mode.NORMAL) {
-            header_bar.custom_title = stack_switcher;
-        }
-
-        header_bar.set_show_close_button (header_bar.mode != HeaderBar.Mode.SELECTION);
     }
 }
 

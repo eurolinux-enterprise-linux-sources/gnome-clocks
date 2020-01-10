@@ -18,12 +18,14 @@
 
 namespace Clocks {
 
-public class HeaderBar : Gtk.HeaderBar {
+public class HeaderBar : Gd.HeaderBar {
     public enum Mode {
         NORMAL,
         SELECTION,
         STANDALONE
     }
+
+    private Gd.StackSwitcher stack_switcher;
 
     [CCode (notify = false)]
     public Mode mode {
@@ -32,8 +34,10 @@ public class HeaderBar : Gtk.HeaderBar {
         }
 
         set {
-            if (_mode != value) {
+            if (_mode != value && get_realized ()) {
                 _mode = value;
+
+                custom_title = (_mode == Mode.NORMAL) ? stack_switcher : null;
 
                 if (_mode == Mode.SELECTION) {
                     get_style_context ().add_class ("selection-mode");
@@ -48,219 +52,156 @@ public class HeaderBar : Gtk.HeaderBar {
 
     private Mode _mode;
 
+    construct {
+        stack_switcher = new Gd.StackSwitcher ();
+        realize.connect (() => {
+            custom_title = stack_switcher;
+        });
+    }
+
+    public void set_stack (Gd.Stack stack) {
+        stack_switcher.set_stack (stack);
+    }
+
     public void clear () {
-        custom_title = null;
         foreach (Gtk.Widget w in get_children ()) {
             w.hide ();
         }
     }
 }
 
+private class DigitalClockRenderer : Gtk.CellRendererPixbuf {
+    public const int TILE_SIZE = 256;
+    public const int CHECK_ICON_SIZE = 40;
+    public const int TILE_MARGIN = CHECK_ICON_SIZE / 4;
+    public const int TILE_MARGIN_BOTTOM = CHECK_ICON_SIZE / 8; // less margin, the text label is below
+
+    public string text { get; set; }
+    public string subtext { get; set; }
+    public string css_class { get; set; }
+    public bool active { get; set; default = false; }
+    public bool toggle_visible { get; set; default = false; }
+
+    public DigitalClockRenderer () {
+    }
+
+    public override void render (Cairo.Context cr, Gtk.Widget widget, Gdk.Rectangle background_area, Gdk.Rectangle cell_area, Gtk.CellRendererState flags) {
+        var context = widget.get_style_context ();
+
+        context.save ();
+        context.add_class ("clocks-digital-renderer");
+        context.add_class (css_class);
+
+        cr.save ();
+        Gdk.cairo_rectangle (cr, cell_area);
+        cr.clip ();
+
+        cr.translate (cell_area.x, cell_area.y);
+
+        // the width of the cell which may be larger in case of long city names
+        int margin = int.max (TILE_MARGIN, (int) ((cell_area.width - TILE_SIZE) / 2));
+
+        // draw the tile
+        if (pixbuf != null) {
+            Gdk.Rectangle area = {margin, margin, TILE_SIZE, TILE_SIZE};
+            base.render (cr, widget, area, area, flags);
+        } else {
+            context.render_frame (cr, margin, margin, TILE_SIZE, TILE_SIZE);
+            context.render_background (cr, margin, margin, TILE_SIZE, TILE_SIZE);
+        }
+
+        int w = cell_area.width - 2 * margin;
+
+        // create the layouts so that we can measure them
+        var layout = widget.create_pango_layout ("");
+        layout.set_markup ("<span font_desc=\"32.0\">%s</span>".printf (text), -1);
+        layout.set_width (w * Pango.SCALE);
+        layout.set_alignment (Pango.Alignment.CENTER);
+        int text_w, text_h;
+        layout.get_pixel_size (out text_w, out text_h);
+
+        Pango.Layout? layout_subtext = null;
+        int subtext_w = 0;
+        int subtext_h = 0;
+        int subtext_pad = 0;
+        if (subtext != null) {
+            layout_subtext = widget.create_pango_layout ("");
+            layout_subtext.set_markup ("<span font_desc=\"14.0\">%s</span>".printf (subtext), -1);
+            layout_subtext.set_width (w * Pango.SCALE);
+            layout_subtext.set_alignment (Pango.Alignment.CENTER);
+            layout_subtext.get_pixel_size (out subtext_w, out subtext_h);
+            subtext_pad = 4;
+            // We just assume the first line is the longest
+            var line = layout_subtext.get_line (0);
+            Pango.Rectangle ink_rect, log_rect;
+            line.get_pixel_extents (out ink_rect, out log_rect);
+            subtext_w = log_rect.width;
+        }
+
+        // draw the stripe background
+        int stripe_h = 128;
+        int x = margin;
+        int y = (cell_area.height - stripe_h) / 2;
+
+        context.add_class ("stripe");
+        context.render_frame (cr, x, y, w, stripe_h);
+        context.render_background (cr, x, y, w, stripe_h);
+
+        // draw text centered on the stripe
+        y += (stripe_h - text_h - subtext_h - subtext_pad) / 2;
+        context.render_layout (cr, x, y, layout);
+        if (subtext != null) {
+            y += text_h + subtext_pad;
+            context.render_layout (cr, x, y, layout_subtext);
+        }
+
+        context.restore ();
+
+        // draw the overlayed checkbox
+        if (toggle_visible) {
+            int xpad, ypad, x_offset;
+            get_padding (out xpad, out ypad);
+
+            if (widget.get_direction () == Gtk.TextDirection.RTL) {
+                x_offset = xpad;
+            } else {
+                x_offset = cell_area.width - CHECK_ICON_SIZE - xpad;
+            }
+
+            int check_x = x_offset;
+            int check_y = cell_area.height - CHECK_ICON_SIZE - ypad;
+
+            context.save ();
+            context.add_class (Gtk.STYLE_CLASS_CHECK);
+
+            if (active) {
+                context.set_state (Gtk.StateFlags.ACTIVE);
+            }
+
+            context.render_check (cr, check_x, check_y, CHECK_ICON_SIZE, CHECK_ICON_SIZE);
+
+            context.restore ();
+        }
+
+        cr.restore ();
+    }
+}
+
 public interface ContentItem : GLib.Object {
     public abstract string name { get; set; }
-    public abstract bool selectable { get; set; default = true; }
-    public abstract bool selected { get; set; default = false; }
-    public abstract void serialize (GLib.VariantBuilder builder);
+    public abstract void get_thumb_properties (out string text, out string subtext, out Gdk.Pixbuf? pixbuf, out string css_class);
 }
 
-public class ContentStore : GLib.Object, GLib.ListModel {
-    private ListStore store;
-    private CompareDataFunc sort_func;
-
-    public signal void selection_changed ();
-
-    public ContentStore () {
-        store = new ListStore (typeof (ContentItem));
-        store.items_changed.connect ((position, removed, added) => {
-            items_changed (position, removed, added);
-        });
-    }
-
-    public Type get_item_type () {
-        return store.get_item_type ();
-    }
-
-    public uint get_n_items () {
-        return store.get_n_items ();
-    }
-
-    public Object? get_item (uint position) {
-        return store.get_item (position);
-    }
-
-    public void set_sorting (owned CompareDataFunc sort) {
-        sort_func = (owned) sort;
-
-        // TODO: we should re-sort, but for now we only
-        // set this before adding any item
-        assert (store.get_n_items () == 0);
-    }
-
-    private void on_item_selection_toggle (Object o, ParamSpec p) {
-        selection_changed ();
-    }
-
-    public void add (ContentItem item) {
-        if (sort_func == null) {
-            store.append (item);
-        } else {
-            store.insert_sorted (item, sort_func);
-        }
-
-        item.notify["selected"].connect (on_item_selection_toggle);
-    }
-
-    public delegate void ForeachFunc (ContentItem item);
-
-    public void foreach (ForeachFunc func) {
-        var n = store.get_n_items ();
-        for (int i = 0; i < n; i++) {
-            func (store.get_object (i) as ContentItem);
-        }
-    }
-
-    public delegate bool FindFunc (ContentItem item);
-
-    public ContentItem? find (FindFunc func) {
-        var n = store.get_n_items ();
-        for (int i = 0; i < n; i++) {
-            var item = store.get_object (i) as ContentItem;
-            if (func (item)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    public uint get_n_selected () {
-        uint n_selected = 0;
-        var n = store.get_n_items ();
-        for (int i = 0; i < n; i++) {
-            var item = store.get_object (i) as ContentItem;
-            if (item.selected) {
-                n_selected++;
-            }
-        }
-        return n_selected;
-    }
-
-    public void delete_selected () {
-        // remove everything and readd the ones not selected
-        uint n_deleted = 0;
-        Object[] not_selected = {};
-        var n = store.get_n_items ();
-        for (int i = 0; i < n; i++) {
-            var o = store.get_object (i);
-            if (!((ContentItem)o).selected) {
-                not_selected += o;
-            } else {
-                n_deleted++;
-                SignalHandler.disconnect_by_func (o, (void *)on_item_selection_toggle, (void *)this);
-            }
-        }
-
-        if (n_deleted > 0) {
-            store.splice (0, n, not_selected);
-            if (sort_func != null) {
-                store.sort (sort_func);
-            }
-
-            selection_changed ();
-        }
-    }
-
-    private void select_unselect_all (bool select) {
-        uint n_toggled = 0;
-
-        var n = store.get_n_items ();
-        for (int i = 0; i < n; i++) {
-            var item = store.get_object (i) as ContentItem;
-            var selected = item.selectable && select;
-            if (selected != item.selected) {
-                SignalHandler.block_by_func (item, (void *)on_item_selection_toggle, (void *)this);
-                item.selected = selected;
-                SignalHandler.unblock_by_func (item, (void *)on_item_selection_toggle, (void *)this);
-                n_toggled++;
-            }
-        }
-
-        if (n_toggled > 0) {
-            selection_changed ();
-        }
-    }
-
-    public void select_all () {
-        select_unselect_all (true);
-    }
-
-    public void unselect_all () {
-        select_unselect_all (false);
-    }
-
-    public Variant serialize () {
-        var builder = new GLib.VariantBuilder (new VariantType ("aa{sv}"));
-        var n = store.get_n_items ();
-        for (int i = 0; i < n; i++) {
-            var item = store.get_object (i) as ContentItem;
-            item.serialize (builder);
-        }
-        return builder.end ();
-    }
-
-    public delegate ContentItem? DeserializeItemFunc (Variant v);
-
-    public void deserialize (Variant variant, DeserializeItemFunc deserialize_item) {
-        foreach (var v in variant) {
-            ContentItem? i = deserialize_item (v);
-            if (i != null) {
-                add (i);
-            }
-        }
-    }
-}
-
-private class SelectionMenuButton : Gtk.MenuButton {
-    public uint n_items {
-        get {
-            return _n_items;
-        }
-        set {
-            if (_n_items != value) {
-                _n_items = value;
-                string label;
-                if (n_items == 0) {
-                    label = _("Click on items to select them");
-                } else {
-                    label = ngettext ("%u selected", "%u selected", n_items).printf (n_items);
-                }
-                menubutton_label.label = label;
-            }
-        }
-    }
-
-    private uint _n_items;
-    private Gtk.Label menubutton_label;
-
-    public SelectionMenuButton () {
-        var app = (Gtk.Application) GLib.Application.get_default ();
-        menu_model = app.get_menu_by_id ("selection-menu");
-        menubutton_label = new Gtk.Label (_("Click on items to select them"));
-        var arrow = new Gtk.Image.from_icon_name ("pan-down-symbolic", Gtk.IconSize.BUTTON);
-        var grid = new Gtk.Grid ();
-        grid.set_column_spacing (6);
-        grid.attach (menubutton_label, 0, 0, 1, 1);
-        grid.attach (arrow, 1, 0, 1, 1);
-        add (grid);
-        valign = Gtk.Align.CENTER;
-        get_style_context ().add_class ("selection-menu");
-        show_all ();
-    }
-}
-
-public class ContentView : Gtk.Bin {
+private class IconView : Gtk.IconView {
     public enum Mode {
         NORMAL,
         SELECTION
+    }
+
+    public enum Column {
+        SELECTED,
+        ITEM,
+        COLUMNS
     }
 
     public Mode mode {
@@ -268,235 +209,383 @@ public class ContentView : Gtk.Bin {
             return _mode;
         }
 
-        private set {
+        set {
             if (_mode != value) {
                 _mode = value;
-
-                switch (_mode) {
-                case Mode.SELECTION:
-                    header_bar.mode = HeaderBar.Mode.SELECTION;
-                    action_bar.show ();
-                    break;
-                case Mode.NORMAL:
-                    header_bar.mode = HeaderBar.Mode.NORMAL;
-                    action_bar.hide ();
-                    // clear current selection
-                    model.unselect_all ();
-                    break;
-                default:
-                    assert_not_reached ();
+                // clear selection
+                if (_mode != Mode.SELECTION) {
+                    unselect_all ();
                 }
+
+                thumb_renderer.toggle_visible = (_mode == Mode.SELECTION);
+                queue_draw ();
             }
         }
     }
 
     private Mode _mode;
-    private ContentStore model;
-    private Gtk.FlowBox flow_box;
-    private Gtk.Button select_button;
-    private Gtk.Button cancel_button;
-    private SelectionMenuButton selection_menubutton;
-    private Gtk.Grid grid;
-    private Gtk.ActionBar action_bar;
-    private Gtk.Button delete_button;
-    private HeaderBar? header_bar;
+    private DigitalClockRenderer thumb_renderer;
 
-    construct {
+    public IconView () {
+        Object (selection_mode: Gtk.SelectionMode.NONE, mode: Mode.NORMAL);
+
+        model = new Gtk.ListStore (Column.COLUMNS, typeof (bool), typeof (ContentItem));
+
         get_style_context ().add_class ("content-view");
+        set_item_padding (0);
+        set_margin (12);
 
-        flow_box = new Gtk.FlowBox ();
-        flow_box.selection_mode = Gtk.SelectionMode.NONE;
-        flow_box.min_children_per_line = 3;
+        var tile_width = DigitalClockRenderer.TILE_SIZE + 2 * DigitalClockRenderer.TILE_MARGIN;
+        var tile_height = DigitalClockRenderer.TILE_SIZE + DigitalClockRenderer.TILE_MARGIN + DigitalClockRenderer.TILE_MARGIN_BOTTOM;
 
-        flow_box.child_activated.connect ((child) => {
-            var item = model.get_item (child.get_index ()) as ContentItem;
-            if (item != null) {
+        thumb_renderer = new DigitalClockRenderer ();
+        thumb_renderer.set_alignment (0.5f, 0.5f);
+        thumb_renderer.set_fixed_size (tile_width, tile_height);
+        pack_start (thumb_renderer, false);
+        add_attribute (thumb_renderer, "active", Column.SELECTED);
+        set_cell_data_func (thumb_renderer, (column, cell, model, iter) => {
+            ContentItem item;
+            model.get (iter, IconView.Column.ITEM, out item);
+            var renderer = (DigitalClockRenderer) cell;
+            string text;
+            string subtext;
+            Gdk.Pixbuf? pixbuf;
+            string css_class;
+            item.get_thumb_properties (out text, out subtext, out pixbuf, out css_class);
+            renderer.text = text;
+            renderer.subtext = subtext;
+            renderer.pixbuf = pixbuf;
+            renderer.css_class = css_class;
+        });
+
+        var text_renderer = new Gtk.CellRendererText ();
+        text_renderer.set_alignment (0.5f, 0.5f);
+        text_renderer.set_fixed_size (tile_width, -1);
+        text_renderer.alignment = Pango.Alignment.CENTER;
+        text_renderer.wrap_width = 220;
+        text_renderer.wrap_mode = Pango.WrapMode.WORD_CHAR;
+        pack_start (text_renderer, true);
+        set_cell_data_func (text_renderer, (column, cell, model, iter) => {
+            ContentItem item;
+            model.get (iter, IconView.Column.ITEM, out item);
+            var renderer = (Gtk.CellRendererText) cell;
+            renderer.markup = GLib.Markup.escape_text (item.name);
+        });
+    }
+
+    public override bool button_press_event (Gdk.EventButton event) {
+        var path = get_path_at_pos ((int) event.x, (int) event.y);
+        if (path != null) {
+            // On right click, swicth to selection mode automatically
+            if (event.button == Gdk.BUTTON_SECONDARY) {
+                mode = Mode.SELECTION;
+            }
+
+            if (mode == Mode.SELECTION) {
+                var store = (Gtk.ListStore) model;
+                Gtk.TreeIter i;
+                if (store.get_iter (out i, path)) {
+                    bool selected;
+                    store.get (i, Column.SELECTED, out selected);
+                    store.set (i, Column.SELECTED, !selected);
+                    selection_changed ();
+                }
+            } else {
+                item_activated (path);
+            }
+        }
+
+        return false;
+    }
+
+    public void add_item (Object item) {
+        var store = (Gtk.ListStore) model;
+        Gtk.TreeIter i;
+        store.append (out i);
+        store.set (i, Column.SELECTED, false, Column.ITEM, item);
+    }
+
+    // Redefine selection handling methods since we handle selection manually
+
+    public new List<Gtk.TreePath> get_selected_items () {
+        var items = new List<Gtk.TreePath> ();
+        model.foreach ((model, path, iter) => {
+            bool selected;
+            ((Gtk.ListStore) model).get (iter, Column.SELECTED, out selected);
+            if (selected) {
+                items.prepend (path);
+            }
+            return false;
+        });
+        items.reverse ();
+        return (owned) items;
+    }
+
+    public new void select_all () {
+        var model = get_model () as Gtk.ListStore;
+        model.foreach ((model, path, iter) => {
+            ((Gtk.ListStore) model).set (iter, Column.SELECTED, true);
+            return false;
+        });
+        selection_changed ();
+    }
+
+    public new void unselect_all () {
+        var model = get_model () as Gtk.ListStore;
+        model.foreach ((model, path, iter) => {
+            ((Gtk.ListStore) model).set (iter, Column.SELECTED, false);
+            return false;
+        });
+        selection_changed ();
+    }
+
+    public void remove_selected () {
+        var paths =  get_selected_items ();
+        paths.reverse ();
+        foreach (Gtk.TreePath path in paths) {
+            Gtk.TreeIter i;
+            if (((Gtk.ListStore) model).get_iter (out i, path)) {
+                ((Gtk.ListStore) model).remove (i);
+            }
+        }
+        selection_changed ();
+    }
+}
+
+public class ContentView : Gtk.Bin {
+    private const int SELECTION_TOOLBAR_WIDTH = 300;
+
+    public bool empty { get; private set; default = true; }
+
+    private Gtk.Widget empty_page;
+    private IconView icon_view;
+    private HeaderBar header_bar;
+    private Gd.HeaderSimpleButton select_button;
+    private Gd.HeaderSimpleButton done_button;
+    private GLib.MenuModel selection_menu;
+    private Gd.HeaderMenuButton selection_menubutton;
+    private Gtk.Toolbar selection_toolbar;
+    private Gtk.Overlay overlay;
+
+    public ContentView (Gtk.Widget e, HeaderBar b) {
+        empty_page = e;
+        header_bar = b;
+
+        icon_view = new IconView ();
+
+        select_button = new Gd.HeaderSimpleButton ();
+        select_button.symbolic_icon_name = "object-select-symbolic";
+        select_button.no_show_all = true;
+        bind_property ("empty", select_button, "sensitive", BindingFlags.SYNC_CREATE | BindingFlags.INVERT_BOOLEAN);
+        select_button.clicked.connect (() => {
+            icon_view.mode = IconView.Mode.SELECTION;
+        });
+        header_bar.pack_end (select_button);
+
+        done_button = new Gd.HeaderSimpleButton ();
+        done_button.label = _("Done");
+        done_button.no_show_all = true;
+        done_button.get_style_context ().add_class ("suggested-action");
+        done_button.clicked.connect (() => {
+            icon_view.mode = IconView.Mode.NORMAL;
+        });
+        header_bar.pack_end (done_button);
+
+        var builder = Utils.load_ui ("menu.ui");
+        selection_menu = builder.get_object ("selection-menu") as GLib.MenuModel;
+
+        selection_menubutton = new Gd.HeaderMenuButton ();
+        selection_menubutton.label = _("Click on items to select them");
+        selection_menubutton.menu_model = selection_menu;
+        selection_menubutton.get_style_context ().add_class ("selection-menu");
+
+        var scrolled_window = new Gtk.ScrolledWindow (null, null);
+        scrolled_window.add (icon_view);
+
+        overlay = new Gtk.Overlay ();
+        overlay.add (scrolled_window);
+
+        selection_toolbar = create_selection_toolbar ();
+        overlay.add_overlay (selection_toolbar);
+
+        var model = icon_view.get_model ();
+        model.row_inserted.connect(() => {
+            update_empty_view (model);
+        });
+        model.row_deleted.connect(() => {
+            update_empty_view (model);
+        });
+
+        icon_view.notify["mode"].connect (() => {
+            if (icon_view.mode == IconView.Mode.SELECTION) {
+                header_bar.mode = HeaderBar.Mode.SELECTION;
+            } else if (icon_view.mode == IconView.Mode.NORMAL) {
+                header_bar.mode = HeaderBar.Mode.NORMAL;
+            }
+        });
+
+        icon_view.selection_changed.connect (() => {
+            var items = icon_view.get_selected_items ();
+            var n_items = items.length ();
+
+            string label;
+            if (n_items == 0) {
+                label = _("Click on items to select them");
+            } else {
+                label = ngettext ("%d selected", "%d selected", n_items).printf (n_items);
+            }
+            selection_menubutton.label = label;
+
+            if (n_items != 0) {
+                fade_in (selection_toolbar);
+            } else {
+                fade_out (selection_toolbar);
+            }
+        });
+
+        icon_view.item_activated.connect ((path) => {
+            var store = (Gtk.ListStore) icon_view.model;
+            Gtk.TreeIter i;
+            if (store.get_iter (out i, path)) {
+                Object item;
+                store.get (i, IconView.Column.ITEM, out item);
                 item_activated (item);
             }
         });
 
-        var scrolled_window = new Gtk.ScrolledWindow (null, null);
-        scrolled_window.add (flow_box);
-        scrolled_window.hexpand = true;
-        scrolled_window.vexpand = true;
-        scrolled_window.halign = Gtk.Align.FILL;
-        scrolled_window.valign = Gtk.Align.FILL;
-
-        grid = new Gtk.Grid ();
-        grid.attach (scrolled_window, 0, 0, 1, 1);
-
-        action_bar = new Gtk.ActionBar ();
-        action_bar.no_show_all = true;
-        grid.attach (action_bar, 0, 1, 1, 1);
-
-        delete_button = new Gtk.Button ();
-        delete_button.label = _("Delete");
-        delete_button.visible = true;
-        delete_button.sensitive = false;
-        delete_button.halign = Gtk.Align.END;
-        delete_button.hexpand = true;
-        delete_button.clicked.connect (() => {
-            model.delete_selected ();
-            mode = Mode.NORMAL;
-        });
-
-        action_bar.pack_end (delete_button);
-
-        add (grid);
-        grid.show_all ();
+        add (empty_page);
     }
 
-    public signal void item_activated (ContentItem item);
+    public signal void item_activated (Object item);
 
-    public delegate Gtk.Widget ContentViewCreateWidgetFunc (ContentItem item);
+    public virtual signal void delete_selected () {
+        icon_view.remove_selected ();
+    }
 
-    public void bind_model (ContentStore store, owned ContentViewCreateWidgetFunc create_func) {
-        model = store;
+    private Gtk.Toolbar create_selection_toolbar () {
+        var toolbar = new Gtk.Toolbar ();
+        toolbar.show_arrow = false;
+        toolbar.icon_size = Gtk.IconSize.LARGE_TOOLBAR;
+        toolbar.halign = Gtk.Align.CENTER;
+        toolbar.valign = Gtk.Align.END;
+        toolbar.margin_bottom = 40;
+        toolbar.get_style_context ().add_class ("osd");
+        toolbar.get_style_context ().add_class ("clocks-fade");
+        toolbar.set_size_request (SELECTION_TOOLBAR_WIDTH, -1);
+        toolbar.no_show_all = true;
 
-        model.selection_changed.connect (() => {
-            var n_items = model.get_n_selected ();
-            selection_menubutton.n_items = n_items;
+        var delete_button = new Gtk.Button.with_label (_("Delete"));
+        delete_button.hexpand = true;
+        delete_button.clicked.connect (() => {
+            delete_selected ();
+        });
 
-            if (n_items != 0) {
-                delete_button.sensitive = true;
-            } else {
-                delete_button.sensitive = false;
+        var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
+        hbox.hexpand = true;
+        hbox.add (delete_button);
+
+        var item = new Gtk.ToolItem ();
+        item.set_expand (true);
+        item.add (hbox);
+        item.show_all ();
+
+        toolbar.insert (item, -1);
+
+        return toolbar;
+    }
+
+    private void update_empty_view (Gtk.TreeModel model) {
+        Gtk.TreeIter i;
+
+        var child = get_child ();
+        if (model.get_iter_first (out i)) {
+            if (child != overlay) {
+                remove (child);
+                add (overlay);
+                empty = false;
             }
-        });
+        } else {
+            if (child != empty_page) {
+                remove (child);
+                add (empty_page);
+                empty = true;
+            }
+        }
+        show_all ();
+    }
 
-        flow_box.bind_model (model, (object) => {
-            var item = (ContentItem) object;
-            var inner = create_func (item);
+    private void fade_in (Gtk.Widget w) {
+        uint timeout_id = w.get_data<uint> ("cloks-fade-out-timeout-id");
+        if (timeout_id != 0) {
+            Source.remove (timeout_id);
+            w.set_data<uint> ("cloks-fade-out-timeout-id", 0);
+        }
+        w.show ();
+        w.get_style_context ().add_class ("clocks-fade-in");
+    }
 
-            // wrap the widget in an event box to handle righ-click
-            var event_box = new Gtk.EventBox ();
-            event_box.add (inner);
-            event_box.button_press_event.connect ((event) => {
-                // On right click, swicth to selection mode automatically
-                if (item.selectable && event.button == Gdk.BUTTON_SECONDARY) {
-                    mode = Mode.SELECTION;
-                }
-
-                if (item.selectable && mode == Mode.SELECTION) {
-                    item.selected = !item.selected;
-                    return true;
-                } else if (event.button == Gdk.BUTTON_PRIMARY) {
-                    item_activated (item);
-                    return true;
-                }
-
+    private void fade_out (Gtk.Widget w) {
+        uint timeout_id = w.get_data<uint> ("cloks-fade-out-timeout-id");
+        if (timeout_id == 0) {
+            w.get_style_context ().remove_class ("clocks-fade-in");
+            timeout_id = Timeout.add (300, () => {
+                w.set_data<uint> ("cloks-fade-out-timeout-id", 0);
+                w.hide ();
                 return false;
             });
+            w.set_data<uint> ("cloks-fade-out-timeout-id", timeout_id);
+        }
+    }
 
-            // wrap the widget in overlay for the selection check box
-            var overlay = new Gtk.Overlay ();
-            overlay.halign = Gtk.Align.START;
-            overlay.valign = Gtk.Align.START;
-            overlay.add (event_box);
+    public void add_item (ContentItem item) {
+        icon_view.add_item (item);
+    }
 
-            var check = new Gtk.CheckButton ();
-            check.no_show_all = true;
-            check.halign = Gtk.Align.END;
-            check.valign = Gtk.Align.END;
-            check.margin_bottom = 8;
-            check.margin_end = 8;
-
-            item.bind_property ("selected", check, "active", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE | BindingFlags.BIDIRECTIONAL);
-            item.bind_property ("selectable", check, "visible", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE,
-                                 (binding, selectable, ref visible) => {
-                visible = this.mode == Mode.SELECTION && (item).selectable;
-                return true;
-            });
-
-            bind_property ("mode", check, "visible", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE,
-                           (binding, mode, ref visible) => {
-                visible = mode == Mode.SELECTION && (item).selectable;
-                return true;
-            });
-
-            overlay.add_overlay (check);
-
-            // manually wrap in flowboxchild ourselves since we want to set alignment
-            var flow_box_child = new Gtk.FlowBoxChild ();
-            flow_box_child.halign = Gtk.Align.START;
-            flow_box_child.valign = Gtk.Align.START;
-            flow_box_child.add (overlay);
-            flow_box_child.get_style_context ().add_class ("tile");
-
-            // flowbox does not handle :hover and setting the PRELIGHT state does not
-            // seem to get propagated to the children despite what the documentation
-            // says... emulate it ourselves with css classes :(
-            event_box.enter_notify_event.connect ((event) => {
-                flow_box_child.get_style_context ().add_class ("prelight");
-                return false;
-            });
-
-            event_box.leave_notify_event.connect ((event) => {
-                if (event.detail != Gdk.NotifyType.INFERIOR) {
-                    flow_box_child.get_style_context ().remove_class ("prelight");
-                }
-                return false;
-            });
-
-            flow_box_child.show_all ();
-
-            return flow_box_child;
-        });
+    // Note: this is not efficient: we first walk the model to collect
+    // a list then the caller has to walk this list and then it has to
+    // delete the items from the view, which walks the model again...
+    // Our models are small enough that it does not matter and hopefully
+    // we will get rid of GtkListStore/GtkIconView soon.
+    public List<Object>? get_selected_items () {
+        var items = new List<Object> ();
+        var store = (Gtk.ListStore) icon_view.model;
+        foreach (Gtk.TreePath path in icon_view.get_selected_items ()) {
+            Gtk.TreeIter i;
+            if (store.get_iter (out i, path)) {
+                Object item;
+                store.get (i, IconView.Column.ITEM, out item);
+                items.prepend (item);
+            }
+        }
+        items.reverse ();
+        return (owned) items;
     }
 
     public void select_all () {
-        mode = Mode.SELECTION;
-        model.select_all ();
+        icon_view.mode = IconView.Mode.SELECTION;
+        icon_view.select_all ();
     }
 
     public void unselect_all () {
-        model.unselect_all ();
+        icon_view.unselect_all ();
     }
 
     public bool escape_pressed () {
-        if (mode == Mode.SELECTION) {
-            mode = Mode.NORMAL;
+        if (icon_view.mode == IconView.Mode.SELECTION) {
+            icon_view.mode = IconView.Mode.NORMAL;
             return true;
         }
         return false;
-    }
-
-    public void set_header_bar (HeaderBar bar) {
-        header_bar = bar;
-
-        select_button = new Gtk.Button ();
-        var select_button_image = new Gtk.Image.from_icon_name ("object-select-symbolic", Gtk.IconSize.MENU);
-        select_button.set_image (select_button_image);
-        select_button.valign = Gtk.Align.CENTER;
-        select_button.no_show_all = true;
-        select_button.clicked.connect (() => {
-            mode = Mode.SELECTION;
-        });
-        header_bar.pack_end (select_button);
-
-        cancel_button = new Gtk.Button.with_label (_("Cancel"));
-        cancel_button.no_show_all = true;
-        cancel_button.valign = Gtk.Align.CENTER;
-        cancel_button.clicked.connect (() => {
-            mode = Mode.NORMAL;
-        });
-        header_bar.pack_end (cancel_button);
-
-        selection_menubutton = new SelectionMenuButton ();
     }
 
     public void update_header_bar () {
         switch (header_bar.mode) {
         case HeaderBar.Mode.SELECTION:
             header_bar.custom_title = selection_menubutton;
-            cancel_button.show ();
+            done_button.show ();
             break;
         case HeaderBar.Mode.NORMAL:
-            var first_selectable = model.find ((i) => {
-                return i.selectable;
-            });
-
-            select_button.visible = first_selectable != null;
+            select_button.show ();
             break;
         }
     }
@@ -521,12 +610,12 @@ public class AmPmToggleButton : Gtk.Button {
     }
 
     private AmPm _choice;
-    private Gtk.Stack stack;
+    private Gd.Stack stack;
     private Gtk.Label am_label;
     private Gtk.Label pm_label;
 
     public AmPmToggleButton () {
-        stack = new Gtk.Stack ();
+        stack = new Gd.Stack ();
 
         get_style_context ().add_class ("clocks-ampm-toggle-button");
 
@@ -547,79 +636,6 @@ public class AmPmToggleButton : Gtk.Button {
         choice = AmPm.AM;
         stack.visible_child = am_label;
         show_all ();
-    }
-}
-
-public class AnalogFrame : Gtk.Bin {
-    protected const int LINE_WIDTH = 6;
-    protected const int RADIUS_PAD = 48;
-
-    private int calculate_diameter () {
-        int ret = 2 * RADIUS_PAD;
-        var child = get_child ();
-        if (child != null && child.visible) {
-            int w, h;
-            child.get_preferred_width (out w, null);
-            child.get_preferred_height (out h, null);
-            ret += (int) Math.sqrt (w * w + h * h);
-        }
-
-        return ret;
-    }
-
-    public override void get_preferred_width (out int min_w, out int natural_w) {
-        var d = calculate_diameter ();
-        min_w = d;
-        natural_w = d;
-    }
-
-    public override void get_preferred_height (out int min_h, out int natural_h) {
-        var d = calculate_diameter ();
-        min_h = d;
-        natural_h = d;
-    }
-
-    public override void size_allocate (Gtk.Allocation allocation) {
-        base.size_allocate (allocation);
-    }
-
-    public override bool draw (Cairo.Context cr) {
-        var context = get_style_context ();
-
-        Gtk.Allocation allocation;
-        get_allocation (out allocation);
-        var center_x = allocation.width / 2;
-        var center_y = allocation.height / 2;
-
-        var radius = calculate_diameter () / 2;
-
-        cr.save ();
-        cr.move_to (center_x + radius, center_y);
-
-        context.save ();
-        context.add_class ("clocks-analog-frame");
-
-        context.save ();
-        context.add_class (Gtk.STYLE_CLASS_TROUGH);
-
-        var color = context.get_color (context.get_state ());
-
-        cr.set_line_width (LINE_WIDTH);
-        Gdk.cairo_set_source_rgba (cr, color);
-        cr.arc (center_x, center_y, radius - LINE_WIDTH / 2, 0, 2 * Math.PI);
-        cr.stroke ();
-
-        context.restore ();
-
-        draw_progress (cr, center_x, center_y, radius);
-
-        context.restore ();
-        cr.restore ();
-
-        return base.draw (cr);
-    }
-
-    public virtual void draw_progress (Cairo.Context cr, int center_x, int center_y, int radius) {
     }
 }
 

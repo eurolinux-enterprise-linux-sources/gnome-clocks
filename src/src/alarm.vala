@@ -19,14 +19,9 @@
 namespace Clocks {
 namespace Alarm {
 
-private struct AlarmTime {
-    public int hour;
-    public int minute;
-}
-
 private class Item : Object, ContentItem {
-    const int SNOOZE_MINUTES = 9;
-    const int RING_MINUTES = 3;
+    static const int SNOOZE_MINUTES = 9;
+    static const int RING_MINUTES = 3;
 
     // FIXME: should we add a "MISSED" state where the alarm stopped
     // ringing but we keep showing the ringing panel?
@@ -35,14 +30,6 @@ private class Item : Object, ContentItem {
         RINGING,
         SNOOZING
     }
-
-    public string title_icon { get; set; default = null; }
-
-    public bool selectable { get; set; default = true; }
-
-    public bool selected { get; set; default = false; }
-
-    public string id { get; construct set; }
 
     public string name {
         get {
@@ -55,9 +42,15 @@ private class Item : Object, ContentItem {
         }
     }
 
-    public AlarmTime time { get; set; }
+    public int hour { get; set; }
+    public int minute { get; set; }
+    public Utils.Weekdays days { get; construct set; }
 
-    public Utils.Weekdays days { get; set; }
+    public string repeat_label {
+        owned get {
+            return days.get_label ();
+        }
+    }
 
     public State state { get; private set; }
 
@@ -73,13 +66,6 @@ private class Item : Object, ContentItem {
          }
     }
 
-    public string days_label {
-         owned get {
-            return days != null ? days.get_label () : null;
-         }
-    }
-
-    [CCode (notify = false)]
     public bool active {
         get {
             return _active;
@@ -93,7 +79,6 @@ private class Item : Object, ContentItem {
                 } else if (state == State.RINGING) {
                     stop ();
                 }
-                notify_property ("active");
             }
         }
     }
@@ -104,19 +89,26 @@ private class Item : Object, ContentItem {
     private GLib.DateTime snooze_time;
     private GLib.DateTime ring_end_time;
     private Utils.Bell bell;
-    private GLib.Notification notification;
 
-    public Item (string? id = null) {
-        var guid = id != null ? id : GLib.DBus.generate_guid ();
-        Object (id: guid);
+    public Item () {
+        days = new Utils.Weekdays ();
+    }
+
+    public Item.with_data (string name, bool active, int hour, int minute, Utils.Weekdays days) {
+        Object (name: name, active: active, hour: hour, minute: minute, days: days);
+
+        setup_bell ();
+        reset ();
     }
 
     private void setup_bell () {
-        bell = new Utils.Bell ("alarm-clock-elapsed");
-        notification = new GLib.Notification (_("Alarm"));
-        notification.set_body (name);
-        notification.add_button (_("Stop"), "app.stop-alarm::".concat (id));
-        notification.add_button (_("Snooze"), "app.snooze-alarm::".concat (id));
+        bell = new Utils.Bell ("alarm-clock-elapsed", _("Alarm"), name);
+        bell.add_action ("stop", _("Stop"), () => {
+            stop ();
+        });
+        bell.add_action ("snooze", _("Snooze"), () => {
+            snooze ();
+        });
     }
 
     public void reset () {
@@ -128,15 +120,15 @@ private class Item : Object, ContentItem {
     private void update_alarm_time () {
         var wallclock = Utils.WallClock.get_default ();
         var now = wallclock.date_time;
-        var dt = new GLib.DateTime (wallclock.timezone,
-                                    now.get_year (),
-                                    now.get_month (),
-                                    now.get_day_of_month (),
-                                    time.hour,
-                                    time.minute,
-                                    0);
+        var dt = new GLib.DateTime(wallclock.timezone,
+                                   now.get_year (),
+                                   now.get_month (),
+                                   now.get_day_of_month (),
+                                   hour,
+                                   minute,
+                                   0);
 
-        if (days == null || days.empty) {
+        if (days.empty) {
             // Alarm without days.
             if (dt.compare (now) <= 0) {
                 // Time already passed, ring tomorrow.
@@ -158,8 +150,6 @@ private class Item : Object, ContentItem {
     }
 
     public virtual signal void ring () {
-        var app = GLib.Application.get_default () as Clocks.Application;
-        app.send_notification ("alarm-clock-elapsed", notification);
         bell.ring ();
     }
 
@@ -179,21 +169,6 @@ private class Item : Object, ContentItem {
         bell.stop ();
         update_snooze_time (alarm_time);
         state = State.READY;
-    }
-
-    private bool compare_with_item (Item i) {
-        return (this.alarm_time.compare (i.alarm_time) == 0 && this.active && i.active);
-    }
-
-    public bool check_duplicate_alarm (List<Item> alarms) {
-        update_alarm_time ();
-
-        foreach (var item in alarms) {
-            if (this.compare_with_item (item)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // Update the state and ringing time. Ring or stop
@@ -225,30 +200,39 @@ private class Item : Object, ContentItem {
         return state != last_state;
     }
 
+    public void get_thumb_properties (out string text, out string subtext, out Gdk.Pixbuf? pixbuf, out string css_class) {
+        if (state == State.SNOOZING) {
+            text = snooze_time_label;
+            subtext = "(%s)".printf(time_label);
+            css_class = "snoozing";
+        } else {
+            text = time_label;
+            subtext = repeat_label;
+            css_class = active ? "active" : "inactive";
+        }
+        pixbuf = null;
+    }
+
     public void serialize (GLib.VariantBuilder builder) {
         builder.open (new GLib.VariantType ("a{sv}"));
         builder.add ("{sv}", "name", new GLib.Variant.string (name));
-        builder.add ("{sv}", "id", new GLib.Variant.string (id));
         builder.add ("{sv}", "active", new GLib.Variant.boolean (active));
-        builder.add ("{sv}", "hour", new GLib.Variant.int32 (time.hour));
-        builder.add ("{sv}", "minute", new GLib.Variant.int32 (time.minute));
+        builder.add ("{sv}", "hour", new GLib.Variant.int32 (hour));
+        builder.add ("{sv}", "minute", new GLib.Variant.int32 (minute));
         builder.add ("{sv}", "days", days.serialize ());
         builder.close ();
     }
 
-    public static ContentItem? deserialize (GLib.Variant alarm_variant) {
+    public static Item? deserialize (GLib.Variant alarm_variant) {
         string? name = null;
-        string? id = null;
         bool active = true;
         int hour = -1;
         int minute = -1;
-        Utils.Weekdays days = null;
+        Utils.Weekdays days = new Utils.Weekdays ();
         foreach (var v in alarm_variant) {
             var key = v.get_child_value (0).get_string ();
             if (key == "name") {
                 name = v.get_child_value (1).get_child_value (0).get_string ();
-            } else if (key == "id") {
-                id = v.get_child_value (1).get_child_value (0).get_string ();
             } else if (key == "active") {
                 active = v.get_child_value (1).get_child_value (0).get_boolean ();
             } else if (key == "hour") {
@@ -260,13 +244,7 @@ private class Item : Object, ContentItem {
             }
         }
         if (name != null && hour >= 0 && minute >= 0) {
-            Item alarm = new Item (id);
-            alarm.name = name;
-            alarm.active = active;
-            alarm.time = { hour, minute };
-            alarm.days = days;
-            alarm.reset ();
-            return alarm;
+            return new Item.with_data (name, active, hour, minute, days);
         } else {
             warning ("Invalid alarm %s", name != null ? name : "name missing");
         }
@@ -274,104 +252,54 @@ private class Item : Object, ContentItem {
     }
 }
 
-[GtkTemplate (ui = "/org/gnome/clocks/ui/alarmtile.ui")]
-private class Tile : Gtk.Grid {
-    public Item alarm { get; construct set; }
-
-    [GtkChild]
-    private Gtk.Label time_label;
-    [GtkChild]
-    private Gtk.Widget name_label;
-
-    public Tile (Item alarm) {
-        Object (alarm: alarm);
-
-        alarm.bind_property ("name", name_label, "label", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
-
-        alarm.notify["active"].connect (update);
-        alarm.notify["state"].connect (update);
-        alarm.notify["time"].connect (update);
-        alarm.notify["days"].connect (update);
-
-        update ();
-    }
-
-    private void update () {
-        string text, sub_text;
-
-        if (alarm.active) {
-            get_style_context ().add_class ("active");
-        } else {
-            get_style_context ().remove_class ("active");
-        }
-
-        if (alarm.state == Item.State.SNOOZING) {
-            get_style_context ().add_class ("snoozing");
-            text = alarm.snooze_time_label;
-            sub_text = "(%s)".printf (alarm.time_label);
-        } else {
-            get_style_context ().remove_class ("snoozing");
-            text = alarm.time_label;
-            sub_text = alarm.days_label;
-        }
-
-        if (sub_text != null && sub_text != "") {
-            time_label.label = "%s\n<span size='xx-small'>%s</span>".printf (text, sub_text);
-        } else {
-            time_label.label = text;
-        }
-    }
-}
-
-[GtkTemplate (ui = "/org/gnome/clocks/ui/alarmsetupdialog.ui")]
 private class SetupDialog : Gtk.Dialog {
     private Utils.WallClock.Format format;
-    [GtkChild]
-    private Gtk.Grid time_grid;
-    [GtkChild]
     private Gtk.SpinButton h_spinbutton;
-    [GtkChild]
     private Gtk.SpinButton m_spinbutton;
-    [GtkChild]
     private Gtk.Entry name_entry;
     private AmPmToggleButton am_pm_button;
     private Gtk.ToggleButton[] day_buttons;
-    [GtkChild]
     private Gtk.Switch active_switch;
-    [GtkChild]
-    private Gtk.Box day_buttons_box;
-    [GtkChild]
-    private Gtk.Stack am_pm_stack;
-    [GtkChild]
-    private Gtk.Revealer label_revealer;
-    private List<Item> other_alarms;
 
-    public SetupDialog (Gtk.Window parent, Item? alarm, ListModel all_alarms) {
-        Object (transient_for: parent, title: alarm != null ? _("Edit Alarm") : _("New Alarm"), use_header_bar: 1);
+    public SetupDialog (Gtk.Window parent, Item? alarm) {
+        Object (transient_for: parent, modal: true, title: alarm != null ? _("Edit Alarm") : _("New Alarm"));
 
-        other_alarms = new List<Item> ();
-        var n = all_alarms.get_n_items ();
-        for (int i = 0; i < n; i++) {
-            var item = all_alarms.get_object (i) as Item;
-            if (alarm != item) {
-                other_alarms.prepend (all_alarms.get_object (i) as Item);
-            }
+        add_buttons (Gtk.Stock.CANCEL, 0, _("_Done"), 1);
+        set_default_response (1);
+
+        format  = Utils.WallClock.get_default ().format;
+        am_pm_button = new AmPmToggleButton ();
+
+        // Get objects from the ui file
+        var builder = Utils.load_ui ("alarm.ui");
+        var grid = builder.get_object ("setup_dialog_content") as Gtk.Grid;
+        var am_pm_alignment = builder.get_object ("am_pm_alignment") as Gtk.Alignment;
+        var am_pm_sizegroup = builder.get_object ("am_pm_sizegroup") as Gtk.SizeGroup;
+        var day_buttons_box = builder.get_object ("day_buttons_box") as Gtk.Box;
+        h_spinbutton = builder.get_object ("h_spinbutton") as Gtk.SpinButton;
+        m_spinbutton = builder.get_object ("m_spinbutton") as Gtk.SpinButton;
+        name_entry = builder.get_object ("name_entry") as Gtk.Entry;
+        active_switch = builder.get_object ("active_switch") as Gtk.Switch;
+
+        h_spinbutton.output.connect (show_leading_zeros);
+        m_spinbutton.output.connect (show_leading_zeros);
+        if (format == Utils.WallClock.Format.TWENTYFOUR)
+            // 24h format
+            h_spinbutton.set_range (0, 23);
+        else {
+            // 12h format
+            h_spinbutton.set_range (1, 12);
+            am_pm_sizegroup.add_widget (am_pm_button);
+            am_pm_alignment.remove (am_pm_alignment.get_child ());
+            am_pm_alignment.add (am_pm_button);
         }
-
-        // Force LTR since we do not want to reverse [hh] : [mm]
-        time_grid.set_direction (Gtk.TextDirection.LTR);
 
         // Create an array with the weekday buttons with
         // day_buttons[0] referencing the button for Monday, and so on.
-        // Also declare toogled signal connection.
         day_buttons = new Gtk.ToggleButton[7];
         for (int i = 0; i < 7; i++) {
             var button = new Gtk.ToggleButton.with_label (Utils.Weekdays.abbreviation ((Utils.Weekdays.Day) i));
             day_buttons[i] = button;
-
-            day_buttons[i].toggled.connect (() => {
-                avoid_duplicate_alarm ();
-            });
         }
 
         // Pack the buttons, starting with the first day of the week
@@ -382,24 +310,7 @@ private class SetupDialog : Gtk.Dialog {
             day_buttons_box.pack_start (day_buttons[day_number]);
         }
 
-        format  = Utils.WallClock.get_default ().format;
-        am_pm_button = new AmPmToggleButton ();
-        am_pm_button.clicked.connect (() => {
-            avoid_duplicate_alarm ();
-        });
-
-        if (format == Utils.WallClock.Format.TWENTYFOUR) {
-            h_spinbutton.set_range (0, 23);
-        } else {
-            h_spinbutton.set_range (1, 12);
-            am_pm_button.hexpand = false;
-            am_pm_button.vexpand = false;
-            am_pm_button.halign = Gtk.Align.CENTER;
-            am_pm_button.valign = Gtk.Align.CENTER;
-            am_pm_stack.add (am_pm_button);
-            am_pm_stack.visible_child = am_pm_button;
-        }
-
+        get_content_area ().add (grid);
         set_from_alarm (alarm);
     }
 
@@ -414,14 +325,14 @@ private class SetupDialog : Gtk.Dialog {
         if (alarm == null) {
             var wc = Utils.WallClock.get_default ();
             name = _("Alarm");
-            hour = wc.date_time.get_hour ();
-            minute = wc.date_time.get_minute ();
+            hour = wc.date_time.get_hour();
+            minute = wc.date_time.get_minute();
             days = null;
             active = true;
         } else {
             name = alarm.name;
-            hour = alarm.time.hour;
-            minute = alarm.time.minute;
+            hour = alarm.hour;
+            minute = alarm.minute;
             days = alarm.days;
             active = alarm.active;
         }
@@ -458,7 +369,7 @@ private class SetupDialog : Gtk.Dialog {
 
     // Sets alarm according to the current dialog settings.
     public void apply_to_alarm (Item alarm) {
-        var name = name_entry.get_text ();
+        var name = name_entry.get_text();
         var active = active_switch.active;
         var hour = h_spinbutton.get_value_as_int ();
         var minute = m_spinbutton.get_value_as_int ();
@@ -471,59 +382,23 @@ private class SetupDialog : Gtk.Dialog {
             }
         }
 
-        AlarmTime time = { hour, minute };
-
-        Utils.Weekdays days = new Utils.Weekdays ();
-        for (int i = 0; i < 7; i++) {
-            days.set ((Utils.Weekdays.Day) i, day_buttons[i].active);
-        }
-
-        alarm.freeze_notify ();
-
         alarm.name = name;
         alarm.active = active;
-        alarm.time = time;
-        alarm.days = days;
+        alarm.hour = hour;
+        alarm.minute = minute;
 
-        // Force update of alarm_time before notifying the changes
-        alarm.reset ();
-
-        alarm.thaw_notify ();
+        for (int i = 0; i < 7; i++) {
+            alarm.days.set ((Utils.Weekdays.Day) i, day_buttons[i].active);
+        }
     }
 
-    private void avoid_duplicate_alarm () {
-        var alarm = new Item ();
-        apply_to_alarm (alarm);
-
-        var duplicate = alarm.check_duplicate_alarm (other_alarms);
-        this.set_response_sensitive (1, !duplicate);
-        label_revealer.set_reveal_child (duplicate);
-    }
-
-    [GtkCallback]
-    private void entry_changed (Gtk.Editable editable) {
-        avoid_duplicate_alarm ();
-    }
-
-    [GtkCallback]
-    private void spinbuttons_changed (Gtk.Editable editable) {
-        avoid_duplicate_alarm ();
-    }
-
-    [GtkCallback]
-    private void active_changed () {
-        avoid_duplicate_alarm ();
-    }
-
-    [GtkCallback]
     private bool show_leading_zeros (Gtk.SpinButton spin_button) {
         spin_button.set_text ("%02i".printf (spin_button.get_value_as_int ()));
         return true;
     }
 }
 
-[GtkTemplate (ui = "/org/gnome/clocks/ui/alarmringing.ui")]
-private class RingingPanel : Gtk.Grid {
+private class RingingPanel : Gtk.EventBox {
     public Item alarm {
         get {
             return _alarm;
@@ -547,17 +422,29 @@ private class RingingPanel : Gtk.Grid {
 
     private Item? _alarm;
     private ulong alarm_state_handler;
-    [GtkChild]
     private Gtk.Label time_label;
+    private Gtk.Button stop_button;
+    private Gtk.Button snooze_button;
 
-    [GtkCallback]
-    private void stop_clicked () {
-        alarm.stop ();
-    }
+    public RingingPanel () {
+        get_style_context ().add_class ("view");
+        get_style_context ().add_class ("content-view");
 
-    [GtkCallback]
-    private void snooze_clicked () {
-        alarm.snooze ();
+        var builder = Utils.load_ui ("alarm.ui");
+        var grid = builder.get_object ("ringing_panel") as Gtk.Grid;
+        time_label = builder.get_object ("time_label") as Gtk.Label;
+        stop_button = builder.get_object ("stop_button") as Gtk.Button;
+        snooze_button = builder.get_object ("snooze_button") as Gtk.Button;
+
+        stop_button.clicked.connect (() => {
+            alarm.stop ();
+        });
+
+        snooze_button.clicked.connect (() => {
+            alarm.snooze ();
+        });
+
+        add (grid);
     }
 
     public virtual signal void dismiss () {
@@ -567,87 +454,84 @@ private class RingingPanel : Gtk.Grid {
     public void update () {
         if (alarm != null) {
             if (alarm.state == Item.State.SNOOZING) {
-                time_label.label = alarm.snooze_time_label;
+                time_label.set_text (alarm.snooze_time_label);
             } else {
-                time_label.label = alarm.time_label;
+                time_label.set_text (alarm.time_label);
             }
         }
     }
 }
 
-[GtkTemplate (ui = "/org/gnome/clocks/ui/alarm.ui")]
-public class Face : Gtk.Stack, Clocks.Clock {
+public class MainPanel : Gd.Stack, Clocks.Clock {
     public string label { get; construct set; }
     public HeaderBar header_bar { get; construct set; }
-    public PanelId panel_id { get; construct set; }
 
-    private ContentStore alarms;
+    private List<Item> alarms;
     private GLib.Settings settings;
-    private Gtk.Button new_button;
-    [GtkChild]
-    private Gtk.Widget empty_view;
-    [GtkChild]
+    private Gd.HeaderSimpleButton new_button;
     private ContentView content_view;
-    [GtkChild]
     private RingingPanel ringing_panel;
 
-    public Face (HeaderBar header_bar) {
-        Object (label: _("Alarm"),
-                header_bar: header_bar,
-                panel_id: PanelId.ALARM);
+    public MainPanel (HeaderBar header_bar) {
+        Object (label: _("Alarm"), header_bar: header_bar);
 
-        alarms = new ContentStore ();
+        alarms = new List<Item> ();
         settings = new GLib.Settings ("org.gnome.clocks");
 
-        var app = GLib.Application.get_default ();
-        var action = app.lookup_action ("stop-alarm");
-        ((GLib.SimpleAction)action).activate.connect ((action, param) => {
-            var a = (Item)alarms.find ((a) => {
-                return ((Item)a).id == param.get_string ();
-            });
-            if (a != null) {
-                a.stop ();
-            }
-        });
-
-        action = app.lookup_action ("snooze-alarm");
-        ((GLib.SimpleAction)action).activate.connect ((action, param) => {
-            var a = (Item)alarms.find ((a) => {
-                return ((Item)a).id == param.get_string ();
-            });
-            if (a != null) {
-                a.snooze ();
-            }
-        });
+        new_button = new Gd.HeaderSimpleButton ();
 
         // Translators: "New" refers to an alarm
-        new_button = new Gtk.Button.with_label (C_("Alarm", "New"));
-        new_button.valign = Gtk.Align.CENTER;
+        new_button.label = _("New");
         new_button.no_show_all = true;
         new_button.action_name = "win.new";
         header_bar.pack_start (new_button);
 
-        content_view.bind_model (alarms, (item) => {
-            return new Tile ((Item)item);
+        var builder = Utils.load_ui ("alarm.ui");
+        var empty_view = builder.get_object ("empty_panel") as Gtk.Widget;
+        content_view = new ContentView (empty_view, header_bar);
+        add (content_view);
+
+        content_view.item_activated.connect ((item) => {
+            Item alarm = (Item) item;
+            if (alarm.state == Item.State.SNOOZING) {
+                show_ringing_panel (alarm);
+            } else {
+                edit (alarm);
+            }
         });
 
-        content_view.set_header_bar (header_bar);
+        content_view.delete_selected.connect (() => {
+            foreach (Object i in content_view.get_selected_items ()) {
+                alarms.remove ((Item) i);
+            }
+            save ();
+        });
+
+        ringing_panel = new RingingPanel ();
+        add (ringing_panel);
+
+        ringing_panel.dismiss.connect (() => {
+            visible_child = content_view;
+        });
 
         load ();
-        show_all ();
 
-        alarms.items_changed.connect ((position, removed, added) => {
-            save ();
-            reset_view ();
+        notify["visible-child"].connect (() => {
+            if (visible_child == content_view) {
+                header_bar.mode = HeaderBar.Mode.NORMAL;
+            } else if (visible_child == ringing_panel) {
+                header_bar.mode = HeaderBar.Mode.STANDALONE;
+            }
         });
 
-        reset_view ();
+        visible_child = content_view;
+        show_all ();
 
         // Start ticking...
         Utils.WallClock.get_default ().tick.connect (() => {
-            alarms.foreach ((i) => {
-                var a = (Item)i;
-                if (a.tick ()) {
+            foreach (var a in alarms) {
+                // a.tick() returns true if the state changed
+                if (a.tick()) {
                     if (a.state == Item.State.RINGING) {
                         show_ringing_panel (a);
                         ring ();
@@ -655,46 +539,33 @@ public class Face : Gtk.Stack, Clocks.Clock {
                         ringing_panel.update ();
                     }
                 }
-            });
+            }
         });
     }
 
     public signal void ring ();
 
-    [GtkCallback]
-    private void item_activated (ContentItem item) {
-        Item alarm = (Item) item;
-        if (alarm.state == Item.State.SNOOZING) {
-            show_ringing_panel (alarm);
-        } else {
-            edit (alarm);
-        }
-    }
-
-    [GtkCallback]
-    private void dismiss_ringing_panel () {
-       reset_view ();
-    }
-
-    [GtkCallback]
-    private void visible_child_changed () {
-        if (visible_child == empty_view || visible_child == content_view) {
-            header_bar.mode = HeaderBar.Mode.NORMAL;
-        } else if (visible_child == ringing_panel) {
-            header_bar.mode = HeaderBar.Mode.STANDALONE;
-        }
-    }
-
     private void load () {
-        alarms.deserialize (settings.get_value ("alarms"), Item.deserialize);
+        foreach (var a in settings.get_value ("alarms")) {
+            Item? alarm = Item.deserialize (a);
+            if (alarm != null) {
+                alarms.prepend (alarm);
+                content_view.add_item (alarm);
+            }
+        }
+        alarms.reverse ();
     }
 
     private void save () {
-        settings.set_value ("alarms", alarms.serialize ());
+        var builder = new GLib.VariantBuilder (new VariantType ("aa{sv}"));
+        foreach (Item i in alarms) {
+            i.serialize (builder);
+        }
+        settings.set_value ("alarms", builder.end ());
     }
 
     private void edit (Item alarm) {
-        var dialog = new SetupDialog ((Gtk.Window) get_toplevel (), alarm, alarms);
+        var dialog = new SetupDialog ((Gtk.Window) get_toplevel (), alarm);
 
         // Disable alarm while editing it and remember the original active state.
         var saved_active = alarm.active;
@@ -703,6 +574,7 @@ public class Face : Gtk.Stack, Clocks.Clock {
         dialog.response.connect ((dialog, response) => {
             if (response == 1) {
                 ((SetupDialog) dialog).apply_to_alarm (alarm);
+                alarm.reset ();
                 save ();
             } else {
                 alarm.active = saved_active;
@@ -718,18 +590,15 @@ public class Face : Gtk.Stack, Clocks.Clock {
         visible_child = ringing_panel;
     }
 
-    private void reset_view () {
-        visible_child = alarms.get_n_items () == 0 ? empty_view : content_view;
-        request_header_bar_update ();
-    }
-
     public void activate_new () {
-        var dialog = new SetupDialog ((Gtk.Window) get_toplevel (), null, alarms);
+        var dialog = new SetupDialog ((Gtk.Window) get_toplevel (), null);
         dialog.response.connect ((dialog, response) => {
             if (response == 1) {
                 var alarm = new Item ();
                 ((SetupDialog) dialog).apply_to_alarm (alarm);
-                alarms.add (alarm);
+                alarms.append (alarm);
+                content_view.add_item (alarm);
+                alarm.reset();
                 save ();
             }
             dialog.destroy ();
@@ -759,7 +628,7 @@ public class Face : Gtk.Stack, Clocks.Clock {
             content_view.update_header_bar ();
             break;
         case HeaderBar.Mode.STANDALONE:
-            header_bar.title = ringing_panel.alarm.name;
+            header_bar.title = GLib.Markup.escape_text (ringing_panel.alarm.name);
             break;
         default:
             assert_not_reached ();

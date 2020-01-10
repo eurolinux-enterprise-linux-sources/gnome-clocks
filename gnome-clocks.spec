@@ -1,95 +1,82 @@
-%global libgweather_version 3.27.2
-
 Name:           gnome-clocks
-Version:        3.28.0
-Release:        1%{?dist}
+Version:        3.8.2
+Release:        8%{?dist}
 Summary:        Clock application designed for GNOME 3
 
 License:        GPLv2+
-URL:            https://wiki.gnome.org/Apps/Clocks
-Source0:        https://download.gnome.org/sources/gnome-clocks/3.28/%{name}-%{version}.tar.xz
+URL:            https://live.gnome.org/GnomeClocks
+Source0:        http://download.gnome.org/sources/gnome-clocks/3.8/%{name}-%{version}.tar.xz
 
-BuildRequires:  meson
-BuildRequires:  desktop-file-utils
-BuildRequires:  gettext
-BuildRequires:  itstool
-BuildRequires:  libappstream-glib
-BuildRequires:  vala
+BuildRequires:  gtk3-devel
+Buildrequires:  gobject-introspection-devel
+BuildRequires:  libcanberra-devel
+BuildRequires:  libgweather-devel
+BuildRequires:  gnome-desktop3-devel
+BuildRequires:  libnotify-devel
+BuildRequires:  vala-tools
+BuildRequires:  intltool desktop-file-utils glib2-devel
 
-BuildRequires:  pkgconfig(gtk+-3.0) >= 3.20
-BuildRequires:  pkgconfig(gweather-3.0) >= %{libgweather_version}
-BuildRequires:  pkgconfig(gnome-desktop-3.0) >= 3.8
-BuildRequires:  pkgconfig(glib-2.0) >= 2.44
-BuildRequires:  pkgconfig(gobject-2.0) >= 2.44
-BuildRequires:  pkgconfig(libgeoclue-2.0) >= 2.4
-BuildRequires:  pkgconfig(geocode-glib-1.0) >= 1.0
-BuildRequires:  pkgconfig(gsound) >= 0.98
+# https://bugzilla.redhat.com/show_bug.cgi?id=1028079
+# Global menu has option "New" even when there's nothing to create
+Patch0:	remove-new-from-global-menu.patch
 
-Requires:       libgweather%{?_isa} >= %{libgweather_version}
+# https://bugzilla.gnome.org/show_bug.cgi?id=1044472
+# [gnome-clocks] Translations incomplete
+Patch1: complete-l10n.patch
+
+# https://bugzilla.gnome.org/show_bug.cgi?id=1028079
+# Global menu has option "New" even when there's nothing to create
+Patch2: add-missing-resources.patch
 
 %description
 Clock application designed for GNOME 3
 
 %prep
-%autosetup -p1
+%setup -q
+
+%patch0 -p1 -b .remove-new-from-global-menu
+%patch1 -p2 -b .complete-l10n
+%patch2 -p1 -b .add-missing-resources
+
+# Force regeneration of resources.c to get this bug really fixed
+# https://bugzilla.redhat.com/show_bug.cgi?id=1028079
+rm src/resources.c
 
 %build
-%meson
-%meson_build
+%configure
+make V=1 %{?_smp_mflags}
 
 %install
-%meson_install
-%find_lang gnome-clocks --with-gnome
-
-%check
-desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/org.gnome.clocks.desktop
+make install DESTDIR=$RPM_BUILD_ROOT
+desktop-file-validate $RPM_BUILD_ROOT/%{_datadir}/applications/gnome-clocks.desktop
+%find_lang gnome-clocks
 
 %post
-/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+/bin/touch --no-create %{_datadir}/icons/hicolor %{_datadir}/icons/HighContrast &>/dev/null || :
 
 %postun
 if [ $1 -eq 0 ] ; then
-    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    /bin/touch --no-create %{_datadir}/icons/hicolor %{_datadir}/icons/HighContrast &>/dev/null
     /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
+    /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/HighContrast &>/dev/null || :
     /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 fi
 
 %posttrans
 /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
+/usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/HighContrast &>/dev/null || :
 /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 
 %files -f gnome-clocks.lang
-%doc AUTHORS README NEWS
-%license COPYING
+%doc AUTHORS COPYING README NEWS
 %{_bindir}/gnome-clocks
 %{_datadir}/gnome-clocks
-%{_datadir}/icons/hicolor/*/apps/org.gnome.clocks.png
-%{_datadir}/icons/hicolor/symbolic/apps/org.gnome.clocks-symbolic.svg
-%{_datadir}/applications/org.gnome.clocks.desktop
-%{_datadir}/dbus-1/services/org.gnome.clocks.service
+%{_datadir}/icons/*/*/apps/gnome-clocks.png
+%{_datadir}/applications/gnome-clocks.desktop
 %{_datadir}/glib-2.0/schemas/org.gnome.clocks.gschema.xml
-%dir %{_datadir}/gnome-shell/
-%dir %{_datadir}/gnome-shell/search-providers/
-%{_datadir}/gnome-shell/search-providers/org.gnome.clocks.search-provider.ini
-%{_datadir}/metainfo/org.gnome.clocks.appdata.xml
+
 
 %changelog
-* Wed May 23 2018 Kalev Lember <klember@redhat.com> - 3.28.0-1
-- Update to 3.28.0
-- Resolves: #1567476
-
-* Thu Feb 23 2017 Matthias Clasen <mclasen@redhat.com> - 3.22.1-1
-- Rebase to 3.22.1
-  Resolves: #1386881
-
-* Fri Jul  1 2016 Matthias Clasen <mclasen@redhat.com> - 3.14.1-2
-- Update translations
-  Resolves: #1272479
-
-* Mon Mar 23 2015 Richard Hughes <rhughes@redhat.com> - 3.14.1-1
-- Update to 3.14.1
-- Resolves: #1174592
-
 * Fri Feb 28 2014 Zeeshan Ali <zeenix@redhat.com> - 3.8.2-8
 - Rebuild to build with -fstack-protector-strong (related: #1070808).
 

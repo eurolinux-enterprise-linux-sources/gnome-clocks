@@ -21,30 +21,25 @@ extern int clocks_cutils_get_week_start ();
 namespace Clocks {
 namespace Utils {
 
-private void load_css (string css, bool required) {
+public Gtk.CssProvider load_css (string css) {
     var provider = new Gtk.CssProvider ();
     try {
-        var file = File.new_for_uri("resource:///org/gnome/clocks/css/" + css + ".css");
+        var file = File.new_for_uri("resource:///org/gnome/clocks/css/" + css);
         provider.load_from_file (file);
     } catch (Error e) {
-        if (required) {
-            warning ("loading css: %s", e.message);
-        }
-
-        return;
+        warning ("loading css: %s", e.message);
     }
-
-    Gtk.StyleContext.add_provider_for_screen (Gdk.Screen.get_default(),
-                                              provider,
-                                              Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+    return provider;
 }
 
-public void load_main_css () {
-    load_css ("gnome-clocks", true);
-}
-
-public void load_theme_css (string theme_name) {
-    load_css ("gnome-clocks." + theme_name.down (), false);
+public Gtk.Builder load_ui (string ui) {
+    var builder = new Gtk.Builder ();
+    try {
+        builder.add_from_resource ("/org/gnome/clocks/ui/".concat (ui, null));
+    } catch (Error e) {
+        error ("loading main builder file: %s", e.message);
+    }
+    return builder;
 }
 
 public Gdk.Pixbuf? load_image (string image) {
@@ -130,18 +125,8 @@ public class WallClock : Object {
     }
 
     public string format_time (GLib.DateTime date_time) {
-        string time = date_time.format (format == Format.TWELVE ? "%I:%M %p" : "%H:%M");
-
-        // Replace ":" with ratio, space with thin-space, and prepend LTR marker
-        // to force direction. Replacement is done afterward because date_time.format
-        // may fail with utf8 chars in some locales
-        time = time.replace (":", "\xE2\x80\x8E\xE2\x88\xB6");
-
-        if (format == Format.TWELVE) {
-            time = time.replace (" ", "\xE2\x80\x89");
-        }
-
-        return time;
+        // Note that the format uses unicode RATIO and THIN SPACE characters
+        return date_time.format (format == Format.TWELVE ? "%I∶%M %p" : "%H∶%M");
     }
 }
 
@@ -158,10 +143,6 @@ public class Weekdays {
 
     private const bool[] weekdays = {
         true, true, true, true, true, false, false
-    };
-
-    private const bool[] weekends = {
-        false, false, false, false, false, true, true
     };
 
     private const string[] plurals = {
@@ -183,7 +164,7 @@ public class Weekdays {
 
     public static string plural (Day d) {
         assert (d >= 0 && d < 7);
-        return _(plurals[d]);
+        return plurals[d];
     }
 
     public static string abbreviation (Day d) {
@@ -254,8 +235,6 @@ public class Weekdays {
             r = _("Every Day");
         } else if (days_equal (weekdays)) {
             r = _("Weekdays");
-        } else if (days_equal (weekends)) {
-            r = _("Weekends");
         } else {
             string[] abbrs = {};
             for (int i = 0; i < 7; i++) {
@@ -299,53 +278,91 @@ public class Weekdays {
 }
 
 public class Bell : Object {
-    private GSound.Context? gsound;
-    private GLib.Cancellable cancellable;
+    private GLib.Settings settings;
+    private Canberra.Context? canberra;
     private string soundtheme;
     private string sound;
+    private Notify.Notification? notification;
 
-    public Bell (string soundid) {
-        try {
-            gsound = new GSound.Context();
-        } catch (GLib.Error e) {
-            warning ("Sound could not be initialized, error: %s", e.message);
+    public delegate void ActionCallback ();
+
+    public Bell (string soundid, string title, string msg) {
+        settings = new GLib.Settings("org.gnome.desktop.sound");
+
+        if (Canberra.Context.create (out canberra) < 0) {
+            warning ("Sound will not be available");
+            canberra = null;
         }
 
-        var settings = new GLib.Settings("org.gnome.desktop.sound");
         soundtheme = settings.get_string ("theme-name");
         sound = soundid;
-        cancellable = new GLib.Cancellable();
+
+        notification = null;
+        if (Notify.is_initted() || Notify.init ("GNOME Clocks")) {
+            notification = new Notify.Notification (title, msg, "gnome-clocks");
+            notification.set_hint_string ("desktop-entry", "gnome-clocks");
+        } else {
+            warning ("Could not initialize notification");
+        }
     }
 
-    private async void ring_real (bool repeat) {
-        if (gsound == null) {
-            return;
+    private bool keep_ringing () {
+        Canberra.Proplist pl;
+        Canberra.Proplist.create (out pl);
+        pl.sets (Canberra.PROP_EVENT_ID, sound);
+        pl.sets (Canberra.PROP_CANBERRA_XDG_THEME_NAME, soundtheme);
+        pl.sets (Canberra.PROP_MEDIA_ROLE, "alarm");
+
+        canberra.play_full (1, pl, (c, id, code) => {
+            if (code == Canberra.SUCCESS) {
+                GLib.Idle.add (keep_ringing);
+            }
+        });
+
+        return false;
+    }
+
+    private void ring_real (bool once) {
+        if (canberra != null) {
+            if (once) {
+                canberra.play (1,
+                               Canberra.PROP_EVENT_ID, sound,
+                               Canberra.PROP_CANBERRA_XDG_THEME_NAME, soundtheme,
+                               Canberra.PROP_MEDIA_ROLE, "alarm");
+            } else {
+                GLib.Idle.add (keep_ringing);
+            }
         }
 
-        try {
-            do {
-                yield gsound.play_full (cancellable,
-                                        GSound.Attribute.EVENT_ID, sound,
-                                        GSound.Attribute.CANBERRA_XDG_THEME_NAME, soundtheme,
-                                        GSound.Attribute.MEDIA_ROLE, "alarm");
-            } while (repeat);
-        } catch (GLib.IOError.CANCELLED e) {
-            // ignore
-        } catch (GLib.Error e) {
-            warning ("Error playing sound: %s", e.message);
+        if (notification != null) {
+            try {
+                notification.show ();
+            } catch (GLib.Error error) {
+                warning (error.message);
+            }
         }
     }
 
     public void ring_once () {
-        ring_real.begin (false);
+        ring_real (true);
     }
 
     public void ring () {
-        ring_real.begin (true);
+        ring_real (false);
     }
 
     public void stop () {
-        cancellable.cancel();
+        if (canberra != null) {
+            canberra.cancel (1);
+        }
+    }
+
+    public void add_action (string action, string label, owned ActionCallback callback) {
+        if (notification != null) {
+            notification.add_action (action, label, (n, a) => {
+                callback ();
+            });
+        }
     }
 }
 

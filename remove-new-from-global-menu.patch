@@ -1,0 +1,31 @@
+From 8dc25b2b47fc1a0cf34a997c66a9b6d83ac98b58 Mon Sep 17 00:00:00 2001
+From: "Zeeshan Ali (Khattak)" <zeeshanak@gnome.org>
+Date: Thu, 12 Dec 2013 13:56:11 +0000
+Subject: [PATCH] ui: Remove 'New' from global menu
+
+https://bugzilla.gnome.org/show_bug.cgi?id=720221
+---
+ data/ui/menu.ui | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/data/ui/menu.ui b/data/ui/menu.ui
+index a86e0dc..97a6dc5 100644
+--- a/data/ui/menu.ui
++++ b/data/ui/menu.ui
+@@ -4,13 +4,6 @@
+   <menu id="appmenu">
+     <section>
+       <item>
+-        <attribute name="label" translatable="yes">_New</attribute>
+-        <attribute name="action">win.new</attribute>
+-        <attribute name="accel">&lt;Primary&gt;n</attribute>
+-      </item>
+-    </section>
+-    <section>
+-      <item>
+         <attribute name="label" translatable="yes">_About</attribute>
+         <attribute name="action">win.about</attribute>
+       </item>
+-- 
+1.8.4.2
+

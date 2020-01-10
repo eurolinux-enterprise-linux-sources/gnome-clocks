@@ -19,143 +19,70 @@
 namespace Clocks {
 
 public class Application : Gtk.Application {
+    static bool print_version;
     const OptionEntry[] option_entries = {
-        { "version", 'v', 0, OptionArg.NONE, null, N_("Print version information and exit"), null },
+        { "version", 'v', 0, OptionArg.NONE, ref print_version, N_("Print version information and exit"), null },
         { null }
     };
 
     const GLib.ActionEntry[] action_entries = {
-        { "stop-alarm", null, "s" },
-        { "snooze-alarm", null, "s" },
-        { "quit", on_quit_activate },
-        { "add-location", on_add_location_activate, "v" }
+        { "quit", on_quit_activate }
     };
 
-    private SearchProvider search_provider;
-    private uint search_provider_id = 0;
     private Window window;
-    private List<string> system_notifications;
-
-    private void ensure_window () {
-        if (window == null) {
-            window = new Window (this);
-            window.destroy.connect (() => {
-                window = null;
-            });
-        }
-    }
 
     public Application () {
         Object (application_id: "org.gnome.clocks");
 
-        Gtk.Window.set_default_icon_name ("org.gnome.clocks");
-
-        add_main_option_entries (option_entries);
         add_action_entries (action_entries, this);
-
-        search_provider = new SearchProvider ();
-        search_provider.activate.connect ((timestamp) => {
-            ensure_window ();
-            window.show_world ();
-            window.present_with_time (timestamp);
-        });
-
-        system_notifications = new List<string> ();
-    }
-
-    public override bool dbus_register (DBusConnection connection, string object_path) {
-        try {
-            search_provider_id = connection.register_object (object_path + "/SearchProvider", search_provider);
-        } catch (IOError error) {
-            printerr ("Could not register search provider service: %s\n", error.message);
-        }
-
-        return true;
-    }
-
-    public override void dbus_unregister (DBusConnection connection, string object_path) {
-        if (search_provider_id != 0) {
-            connection.unregister_object (search_provider_id);
-            search_provider_id = 0;
-        }
     }
 
     protected override void activate () {
-        base.activate ();
-
-        ensure_window ();
+        if (window == null) {
+            window = new Window (this);
+        }
         window.present ();
-
-        window.focus_in_event.connect (() => {
-            withdraw_notifications ();
-
-            return false;
-        });
-    }
-
-    private void update_theme (Gtk.Settings settings) {
-        string theme_name;
-
-        settings.get("gtk-theme-name", out theme_name);
-        Utils.load_theme_css (theme_name);
     }
 
     protected override void startup () {
         base.startup ();
 
-        Utils.load_main_css ();
+        // FIXME: move the css in gnome-theme-extras
+        var css_provider = Utils.load_css ("gnome-clocks.css");
+        Gtk.StyleContext.add_provider_for_screen (Gdk.Screen.get_default(),
+                                                  css_provider,
+                                                  Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-        var settings = Gtk.Settings.get_default ();
-        settings.notify["gtk-theme-name"].connect(() => {
-            update_theme (settings);
-        });
-        update_theme (settings);
+        var builder = Utils.load_ui ("menu.ui");
+        var app_menu = builder.get_object ("appmenu") as MenuModel;
+        set_app_menu (app_menu);
 
-        add_accelerator ("<Primary>n", "win.new", null);
         add_accelerator ("<Primary>a", "win.select-all", null);
     }
 
-    protected override int handle_local_options (GLib.VariantDict options) {
-        if (options.contains("version")) {
+    protected override bool local_command_line ([CCode (array_length = false, array_null_terminated = true)] ref unowned string[] arguments, out int exit_status) {
+        var ctx = new OptionContext ("");
+
+        ctx.add_main_entries (option_entries, Config.GETTEXT_PACKAGE);
+        ctx.add_group (Gtk.get_option_group (true));
+
+        // Workaround for bug #642885
+        unowned string[] argv = arguments;
+
+        try {
+            ctx.parse (ref argv);
+        } catch (Error e) {
+            exit_status = 1;
+            return true;
+        }
+
+        if (print_version) {
             print ("%s %s\n", Environment.get_application_name (), Config.VERSION);
-            return 0;
+            exit_status = 0;
+            return true;
         }
 
-        return -1;
-    }
-
-    public void on_add_location_activate (GLib.SimpleAction action, GLib.Variant? parameter) {
-        if (parameter == null) {
-            return;
-        }
-
-        ensure_window ();
-        window.show_world ();
-        window.present ();
-
-        var world = GWeather.Location.get_world ();
-        var location = world.deserialize (parameter.get_child_value(0));
-        if (location != null) {
-            window.add_world_location (location);
-        }
-    }
-
-    public new void send_notification (string notification_id, GLib.Notification notification) {
-        base.send_notification (notification_id, notification);
-
-        system_notifications.append (notification_id);
-    }
-
-    private void withdraw_notifications () {
-        foreach (var notification in system_notifications) {
-            withdraw_notification (notification);
-        }
-    }
-
-    public override void shutdown () {
-        base.shutdown ();
-
-        withdraw_notifications ();
+        return base.local_command_line (ref arguments, out exit_status);
     }
 
     void on_quit_activate () {
