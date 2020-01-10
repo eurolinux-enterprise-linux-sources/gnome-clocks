@@ -1,11 +1,13 @@
 Name:           gnome-clocks
 Version:        3.14.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Clock application designed for GNOME 3
 
 License:        GPLv2+
 URL:            https://live.gnome.org/GnomeClocks
 Source0:        http://download.gnome.org/sources/gnome-clocks/3.14/%{name}-%{version}.tar.xz
+
+Patch0: translations.patch
 
 BuildRequires:  gtk3-devel
 Buildrequires:  gobject-introspection-devel
@@ -22,6 +24,7 @@ Clock application designed for GNOME 3
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %configure
@@ -63,6 +66,10 @@ fi
 
 
 %changelog
+* Fri Jul  1 2016 Matthias Clasen <mclasen@redhat.com> - 3.14.1-2
+- Update translations
+  Resolves: #1272479
+
 * Mon Mar 23 2015 Richard Hughes <rhughes@redhat.com> - 3.14.1-1
 - Update to 3.14.1
 - Resolves: #1174592
