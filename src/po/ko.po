@@ -1,0 +1,358 @@
+# Korean translation for gnome-clocks.
+# Copyright (C) 2012 gnome-clocks's COPYRIGHT HOLDER
+# This file is distributed under the same license as the gnome-clocks package.
+# Seong-ho Cho <darkcircle.0426@gmail.com>, 2012, 2013, 2014.
+#
+# 번역에 참여하신 분께서는
+# 상단 주석에 다음과 같은 형식으로
+# 기재해 주시기 바랍니다
+#
+# (given name) (surname) <e-mail>, YEAR.
+#
+# translator-credits에 다음과 같은 형식으로
+# 기재해 주시기 바랍니다
+#
+# "(given name) (surname) <e-mail>\n" (\n 추가)
+# "(your given name) (your surname) <e-mail>"
+msgid ""
+msgstr ""
+"Project-Id-Version: gnome-clocks master\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=clocks&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2014-03-16 07:11+0000\n"
+"PO-Revision-Date: 2014-03-15 02:56+0900\n"
+"Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
+"Language-Team: Korean <gnome-kr@googlegroups.com>\n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 1.5.5\n"
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:1
+msgid ""
+"A simple and elegant clock application. It includes world clocks, alarms, a "
+"stopwatch and a timer."
+msgstr ""
+"단순하고 우아한 시계 프로그램입니다. 세계시계, 알림, 스톱워치, 타이머 기능이 "
+"있습니다."
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:2
+msgid "Goals:"
+msgstr "목표:"
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:3
+msgid "Show the time in different cities around the world"
+msgstr "전세계 각 도시의 시계를 보여줍니다"
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:4
+msgid "Set alarms to wake you up"
+msgstr "여러분을 깨울 알림을 설정합니다"
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:5
+msgid "Measure elapsed time with an accurate stopwatch"
+msgstr "정확한 스톱워치로 경과 시간을 잽니다"
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:6
+msgid "Set timers to properly cook your food"
+msgstr "음식을 적당하게 요리하기 위한 타이머를 설정합니다"
+
+#: ../data/org.gnome.clocks.desktop.in.h:1 ../src/window.vala:188
+#: ../data/ui/window.ui.h:1
+msgid "Clocks"
+msgstr "시계"
+
+#: ../data/org.gnome.clocks.desktop.in.h:2
+msgid "GNOME Clocks"
+msgstr "그놈 시계"
+
+#: ../data/org.gnome.clocks.desktop.in.h:3
+msgid "Clocks for world times, plus alarms, stopwatch and a timer"
+msgstr "세계 시계, 알림, 초시계, 타이머 기능이 있는 시계"
+
+#: ../data/org.gnome.clocks.desktop.in.h:4
+msgid "time;timer;alarm;world clock;stopwatch;time zone;"
+msgstr ""
+"time;시간;timer;타이머;alarm;알림;world clock;세계 시계;stopwatch;스톱워치;"
+"time zone;시간대;"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:1
+msgid "Configured world clocks"
+msgstr "세계 시계를 설정했습니다"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:2
+msgid "List of world clocks to show."
+msgstr "보여줄 세계 시계의 목록."
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:3
+msgid "Configured alarms"
+msgstr "알람을 설정했습니다"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:4
+msgid "List of alarms set."
+msgstr "알람 모음의 목록."
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:5 ../src/timer.vala:107
+msgid "Timer"
+msgstr "타이머"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:6
+msgid "Configured timer duration in seconds."
+msgstr "초 단위로 타이머 시간을 설정했습니다."
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:7
+msgid "Geolocation support"
+msgstr "지오로케이션 지원"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:8
+msgid "Turn geolocation support on and off."
+msgstr "지오로케이션 지원을 켜고 끕니다."
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:9
+msgid "Window state"
+msgstr "창 상태"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:10
+msgid "State of the window: i.e. maximized."
+msgstr "창 상태: 예. 최대화."
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:11
+msgid "Window width and height"
+msgstr "창 폭과 너비"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:12
+msgid "Width and height of the window."
+msgstr "창의 폭과 너비."
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:13
+msgid "Panel state"
+msgstr "패널 상태"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:14
+msgid "Current clock panel."
+msgstr "현재 시간 패널."
+
+#: ../src/alarm.vala:115 ../src/alarm.vala:368 ../src/alarm.vala:542
+msgid "Alarm"
+msgstr "알림"
+
+#: ../src/alarm.vala:117 ../src/stopwatch.vala:188 ../data/ui/alarm.ui.h:2
+msgid "Stop"
+msgstr "정지"
+
+#: ../src/alarm.vala:118 ../data/ui/alarm.ui.h:3
+msgid "Snooze"
+msgstr "다시 알림"
+
+#: ../src/alarm.vala:308
+msgid "Edit Alarm"
+msgstr "알림 편집"
+
+#: ../src/alarm.vala:308
+msgid "New Alarm"
+msgstr "새 알림"
+
+#. Translators: "New" refers to an alarm
+#. Translators: "New" refers to a world clock
+#: ../src/alarm.vala:565 ../src/world.vala:281
+msgid "New"
+msgstr "새로 만들기"
+
+#: ../src/application.vala:23
+msgid "Print version information and exit"
+msgstr "버전 정보를 출력하고 나갑니다"
+
+#: ../src/stopwatch.vala:130
+msgid "Stopwatch"
+msgstr "스톱워치"
+
+#  * Note: Lap time: 경과 시간. therefore: Lap=> 경과.
+#: ../src/stopwatch.vala:191
+msgid "Lap"
+msgstr "경과"
+
+#: ../src/stopwatch.vala:198 ../src/timer.vala:162
+msgid "Continue"
+msgstr "계속"
+
+#: ../src/stopwatch.vala:202 ../data/ui/stopwatch.ui.h:2
+#: ../data/ui/timer.ui.h:3
+msgid "Reset"
+msgstr "초기화"
+
+#: ../src/stopwatch.vala:210 ../data/ui/stopwatch.ui.h:1
+#: ../data/ui/timer.ui.h:1
+msgid "Start"
+msgstr "시작"
+
+#: ../src/timer.vala:116
+msgid "Time is up!"
+msgstr "시간이 되었습니다!"
+
+#: ../src/timer.vala:117
+msgid "Timer countdown finished"
+msgstr "타이머 카운트 다운이 끝났습니다"
+
+#: ../src/timer.vala:167 ../src/timer.vala:178 ../data/ui/timer.ui.h:2
+msgid "Pause"
+msgstr "일시정지"
+
+#: ../src/utils.vala:163
+msgid "Mondays"
+msgstr "월요일마다"
+
+#: ../src/utils.vala:164
+msgid "Tuesdays"
+msgstr "화요일마다"
+
+#: ../src/utils.vala:165
+msgid "Wednesdays"
+msgstr "수요일마다"
+
+#: ../src/utils.vala:166
+msgid "Thursdays"
+msgstr "목요일마다"
+
+#: ../src/utils.vala:167
+msgid "Fridays"
+msgstr "금요일마다"
+
+#: ../src/utils.vala:168
+msgid "Saturdays"
+msgstr "토요일마다"
+
+#: ../src/utils.vala:169
+msgid "Sundays"
+msgstr "일요일마다"
+
+#: ../src/utils.vala:249
+msgid "Every Day"
+msgstr "매일"
+
+#: ../src/utils.vala:251
+msgid "Weekdays"
+msgstr "매주"
+
+#: ../src/utils.vala:253
+msgid "Weekends"
+msgstr "주말"
+
+#: ../src/widgets.vala:459
+msgid "Cancel"
+msgstr "취소"
+
+#: ../src/widgets.vala:471 ../src/widgets.vala:534
+msgid "Click on items to select them"
+msgstr "선택할 항목을 마우스 단추로 누르십시오"
+
+#: ../src/widgets.vala:498
+msgid "Delete"
+msgstr "삭제"
+
+#: ../src/widgets.vala:536
+#, c-format
+msgid "%d selected"
+msgid_plural "%d selected"
+msgstr[0] "%d개 항목 선택함"
+
+#: ../src/window.vala:161
+#, c-format
+msgid "Failed to show help: %s"
+msgstr "도움말 표시에 실패했습니다: %s"
+
+#: ../src/window.vala:191
+msgid "Utilities to help you with the time."
+msgstr "시간에 대해 도움을 줄 유용한 도구."
+
+#: ../src/window.vala:196
+msgid "translator-credits"
+msgstr "Seong-ho Cho <darkcircle.0426@gmail.com>"
+
+#. If it is Dec 31st here and Jan 1st there (d = 1), then "tomorrow"
+#: ../src/world.vala:112 ../src/world.vala:115
+msgid "Tomorrow"
+msgstr "내일"
+
+#. If it is Jan 1st here and Dec 31st there (t = 1), then "yesterday"
+#: ../src/world.vala:112 ../src/world.vala:115
+msgid "Yesterday"
+msgstr "어제"
+
+#: ../src/world.vala:272
+msgid "World"
+msgstr "세계"
+
+#. namespace World
+#. namespace Clocks
+#: ../data/ui/alarmsetupdialog.ui.h:1 ../data/ui/worldlocationdialog.ui.h:1
+msgid "Add a New World Clock"
+msgstr "새 세계 시계 추가"
+
+#: ../data/ui/alarmsetupdialog.ui.h:2 ../data/ui/worldlocationdialog.ui.h:2
+msgid "_Cancel"
+msgstr "취소(_C)"
+
+#: ../data/ui/alarmsetupdialog.ui.h:3
+msgid "_Done"
+msgstr "완료(_D)"
+
+#: ../data/ui/alarmsetupdialog.ui.h:4
+msgid "You already have an alarm for this time."
+msgstr "이미 알림을 설정했습니다."
+
+#: ../data/ui/alarmsetupdialog.ui.h:5
+msgid "Name"
+msgstr "이름"
+
+#: ../data/ui/alarmsetupdialog.ui.h:6
+msgid "Repeat Every"
+msgstr "다음 마다 반복"
+
+#: ../data/ui/alarmsetupdialog.ui.h:7
+msgid "Active"
+msgstr "활성"
+
+#: ../data/ui/alarm.ui.h:1
+msgid "Select <b>New</b> to add an alarm"
+msgstr "알림을 추가하려면 <b>새로 만들기</b>를 선택하십시오"
+
+#: ../data/ui/menu.ui.h:1
+msgid "_Help"
+msgstr "도움말(_H)"
+
+#: ../data/ui/menu.ui.h:2
+msgid "_About"
+msgstr "정보(_A)"
+
+#: ../data/ui/menu.ui.h:3
+msgid "_Quit"
+msgstr "끝내기(_Q)"
+
+#: ../data/ui/menu.ui.h:4
+msgid "Select All"
+msgstr "모두 선택"
+
+#: ../data/ui/menu.ui.h:5
+msgid "Select None"
+msgstr "선택 안함"
+
+#: ../data/ui/worldlocationdialog.ui.h:3
+msgid "_Add"
+msgstr "추가(_A)"
+
+#: ../data/ui/worldlocationdialog.ui.h:4
+msgid "Search for a city:"
+msgstr "도시 검색:"
+
+#: ../data/ui/world.ui.h:1
+msgid "Select <b>New</b> to add a world clock"
+msgstr "세계 시계를 추가하려면 <b>새로 만들기</b>를 선택하십시오"
+
+#: ../data/ui/world.ui.h:2
+msgid "Sunrise"
+msgstr "일출"
+
+#: ../data/ui/world.ui.h:3
+msgid "Sunset"
+msgstr "일몰"

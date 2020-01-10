@@ -1,0 +1,23 @@
+data/appdata/org.gnome.clocks.appdata.xml.in
+data/org.gnome.clocks.desktop.in
+data/org.gnome.clocks.gschema.xml.in.in
+src/alarm.vala
+src/application.vala
+src/clock.vala
+src/search-provider.vala
+src/stopwatch.vala
+src/timer.vala
+src/utils.vala
+src/widgets.vala
+src/window.vala
+src/world.vala
+[type: gettext/glade]data/gtk/menus.ui
+[type: gettext/glade]data/ui/alarmringing.ui
+[type: gettext/glade]data/ui/alarmsetupdialog.ui
+[type: gettext/glade]data/ui/alarm.ui
+[type: gettext/glade]data/ui/stopwatchlapsrow.ui
+[type: gettext/glade]data/ui/stopwatch.ui
+[type: gettext/glade]data/ui/timer.ui
+[type: gettext/glade]data/ui/window.ui
+[type: gettext/glade]data/ui/worldlocationdialog.ui
+[type: gettext/glade]data/ui/world.ui

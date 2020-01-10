@@ -1,0 +1,367 @@
+# Japanese translation for gnome-clocks.
+# Copyright (C) 2012 gnome-clocks's COPYRIGHT HOLDER
+# This file is distributed under the same license as the gnome-clocks package.
+# Takeshi AIHANA <takeshi.aihana@gmail.com>, 2012.
+# Jiro Matsuzawa <jmatsuzawa@gnome.org>, 2012, 2013.
+# Ikuya Awashiro <ikuya@fruitsbasket.info>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnome-clocks master\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=clocks&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2014-03-30 06:34+0000\n"
+"PO-Revision-Date: 2014-03-30 16:34+0900\n"
+"Last-Translator: Ikuya Awashiro <ikuya@fruitsbasket.info>\n"
+"Language-Team: Japanese <gnome-translation@gnome.gr.jp>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:1
+msgid "A simple and elegant clock application. It includes world clocks, alarms, a stopwatch and a timer."
+msgstr ""
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:2
+msgid "Goals:"
+msgstr ""
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:3
+msgid "Show the time in different cities around the world"
+msgstr ""
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:4
+msgid "Set alarms to wake you up"
+msgstr ""
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:5
+msgid "Measure elapsed time with an accurate stopwatch"
+msgstr ""
+
+#: ../data/appdata/org.gnome.clocks.appdata.xml.in.h:6
+msgid "Set timers to properly cook your food"
+msgstr ""
+
+#: ../data/org.gnome.clocks.desktop.in.h:1 ../src/window.vala:188
+#: ../data/ui/window.ui.h:1
+msgid "Clocks"
+msgstr "時計"
+
+#: ../data/org.gnome.clocks.desktop.in.h:2
+msgid "GNOME Clocks"
+msgstr "GNOME Clocks"
+
+#: ../data/org.gnome.clocks.desktop.in.h:3
+msgid "Clocks for world times, plus alarms, stopwatch and a timer"
+msgstr "世界時計、アラーム、ストップウォッチ、およびタイマー機能をもつ時計アプリケーション"
+
+#: ../data/org.gnome.clocks.desktop.in.h:4
+msgid "time;timer;alarm;world clock;stopwatch;time zone;"
+msgstr "time;timer;alarm;world clock;stopwatch;time zone;時間;時刻;タイム;タイマー;アラーム;世界時計;時計;ストップウォッチ;ストップウオッチ;タイムゾーン;"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:1
+msgid "Configured world clocks"
+msgstr "設定した世界時計"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:2
+msgid "List of world clocks to show."
+msgstr "表示する世界時計のリストです。"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:3
+msgid "Configured alarms"
+msgstr "設定したアラーム"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:4
+msgid "List of alarms set."
+msgstr "セットしたアラームのリストです。"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:5 ../src/timer.vala:107
+msgid "Timer"
+msgstr "タイマー"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:6
+msgid "Configured timer duration in seconds."
+msgstr "設定したタイマー時間です (秒単位)。"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:7
+msgid "Geolocation support"
+msgstr "位置情報サポートを有効にする"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:8
+msgid "Turn geolocation support on and off."
+msgstr "位置情報サポートのオン/オフを切り替えます。"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:9
+msgid "Window state"
+msgstr "ウィンドウの状態"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:10
+msgid "State of the window: i.e. maximized."
+msgstr "ウィンドウの状態 (最大化されているかどうか) です。"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:11
+msgid "Window width and height"
+msgstr "ウィンドウの幅と高さ"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:12
+msgid "Width and height of the window."
+msgstr "ウィンドウの幅と高さです。"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:13
+msgid "Panel state"
+msgstr "パネルの状態"
+
+#: ../data/org.gnome.clocks.gschema.xml.in.in.h:14
+msgid "Current clock panel."
+msgstr "現在のパネルの状態です。"
+
+#: ../src/alarm.vala:115 ../src/alarm.vala:368 ../src/alarm.vala:542
+msgid "Alarm"
+msgstr "アラーム"
+
+#: ../src/alarm.vala:117 ../src/stopwatch.vala:188 ../data/ui/alarm.ui.h:2
+msgid "Stop"
+msgstr "停止"
+
+#: ../src/alarm.vala:118 ../data/ui/alarm.ui.h:3
+msgid "Snooze"
+msgstr "スヌーズ"
+
+#: ../src/alarm.vala:308
+msgid "Edit Alarm"
+msgstr "アラームの編集"
+
+#: ../src/alarm.vala:308
+msgid "New Alarm"
+msgstr "新しいアラーム"
+
+#. Translators: "New" refers to an alarm
+#. Translators: "New" refers to a world clock
+#: ../src/alarm.vala:565 ../src/world.vala:281
+msgid "New"
+msgstr "新規"
+
+#: ../src/application.vala:23
+msgid "Print version information and exit"
+msgstr "バージョン情報を表示して終了する"
+
+#: ../src/stopwatch.vala:130
+msgid "Stopwatch"
+msgstr "ストップウォッチ"
+
+#: ../src/stopwatch.vala:191
+msgid "Lap"
+msgstr "ラップ"
+
+#: ../src/stopwatch.vala:198 ../src/timer.vala:162
+msgid "Continue"
+msgstr "続行"
+
+#: ../src/stopwatch.vala:202 ../data/ui/stopwatch.ui.h:2
+#: ../data/ui/timer.ui.h:3
+msgid "Reset"
+msgstr "リセット"
+
+#: ../src/stopwatch.vala:210 ../data/ui/stopwatch.ui.h:1
+#: ../data/ui/timer.ui.h:1
+msgid "Start"
+msgstr "開始"
+
+#: ../src/timer.vala:116
+msgid "Time is up!"
+msgstr "タイムアップ!"
+
+#: ../src/timer.vala:117
+msgid "Timer countdown finished"
+msgstr "タイマー満了です"
+
+#: ../src/timer.vala:167 ../src/timer.vala:178 ../data/ui/timer.ui.h:2
+msgid "Pause"
+msgstr "一時停止"
+
+#: ../src/utils.vala:163
+msgid "Mondays"
+msgstr "月曜日"
+
+#: ../src/utils.vala:164
+msgid "Tuesdays"
+msgstr "火曜日"
+
+#: ../src/utils.vala:165
+msgid "Wednesdays"
+msgstr "水曜日"
+
+#: ../src/utils.vala:166
+msgid "Thursdays"
+msgstr "木曜日"
+
+#: ../src/utils.vala:167
+msgid "Fridays"
+msgstr "金曜日"
+
+#: ../src/utils.vala:168
+msgid "Saturdays"
+msgstr "土曜日"
+
+#: ../src/utils.vala:169
+msgid "Sundays"
+msgstr "日曜日"
+
+#: ../src/utils.vala:249
+msgid "Every Day"
+msgstr "毎日"
+
+#: ../src/utils.vala:251
+msgid "Weekdays"
+msgstr "平日"
+
+#: ../src/utils.vala:253
+msgid "Weekends"
+msgstr "週末"
+
+#: ../src/widgets.vala:459
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: ../src/widgets.vala:471 ../src/widgets.vala:534
+msgid "Click on items to select them"
+msgstr "選択するアイテムをクリックします"
+
+#: ../src/widgets.vala:498
+msgid "Delete"
+msgstr "削除"
+
+#: ../src/widgets.vala:536
+#, c-format
+msgid "%d selected"
+msgid_plural "%d selected"
+msgstr[0] "%d 件選択"
+
+#: ../src/window.vala:161
+#, c-format
+msgid "Failed to show help: %s"
+msgstr "ヘルプの表示に失敗しました: %s"
+
+#: ../src/window.vala:191
+msgid "Utilities to help you with the time."
+msgstr "便利な時計ユーティリティです。"
+
+#: ../src/window.vala:196
+msgid "translator-credits"
+msgstr ""
+"相花 毅 <takeshi.aihana@gmail.com>\n"
+"松澤二郎 <jmatsuzawa@gnome.org>\n"
+"日本GNOMEユーザー会 <http://www.gnome.gr.jp/>"
+
+#. If it is Dec 31st here and Jan 1st there (d = 1), then "tomorrow"
+#: ../src/world.vala:112 ../src/world.vala:115
+msgid "Tomorrow"
+msgstr "明日"
+
+#. If it is Jan 1st here and Dec 31st there (t = 1), then "yesterday"
+#: ../src/world.vala:112 ../src/world.vala:115
+msgid "Yesterday"
+msgstr "昨日"
+
+#: ../src/world.vala:272
+msgid "World"
+msgstr "世界時計"
+
+#. namespace World
+#. namespace Clocks
+#: ../data/ui/alarmsetupdialog.ui.h:1 ../data/ui/worldlocationdialog.ui.h:1
+msgid "Add a New World Clock"
+msgstr "世界時計の新規追加"
+
+#: ../data/ui/alarmsetupdialog.ui.h:2 ../data/ui/worldlocationdialog.ui.h:2
+msgid "_Cancel"
+msgstr "キャンセル(_C)"
+
+#: ../data/ui/alarmsetupdialog.ui.h:3
+msgid "_Done"
+msgstr "完了(_D)"
+
+#: ../data/ui/alarmsetupdialog.ui.h:4
+msgid "You already have an alarm for this time."
+msgstr "この時間にはすでにアラームが設定されています。"
+
+#: ../data/ui/alarmsetupdialog.ui.h:5
+msgid "Name"
+msgstr "名称"
+
+#: ../data/ui/alarmsetupdialog.ui.h:6
+msgid "Repeat Every"
+msgstr "繰り返し"
+
+#: ../data/ui/alarmsetupdialog.ui.h:7
+msgid "Active"
+msgstr "アクティブ"
+
+#: ../data/ui/alarm.ui.h:1
+msgid "Select <b>New</b> to add an alarm"
+msgstr "アラームを追加するには<b>新規</b>を選択します"
+
+#: ../data/ui/menu.ui.h:1
+msgid "_Help"
+msgstr "ヘルプ(_H)"
+
+#: ../data/ui/menu.ui.h:2
+msgid "_About"
+msgstr "このアプリケーションについて(_A)"
+
+#: ../data/ui/menu.ui.h:3
+msgid "_Quit"
+msgstr "終了(_Q)"
+
+#: ../data/ui/menu.ui.h:4
+msgid "Select All"
+msgstr "すべて選択"
+
+#: ../data/ui/menu.ui.h:5
+msgid "Select None"
+msgstr "何も選択しない"
+
+#: ../data/ui/worldlocationdialog.ui.h:3
+msgid "_Add"
+msgstr "追加(_A)"
+
+#: ../data/ui/worldlocationdialog.ui.h:4
+msgid "Search for a city:"
+msgstr "都市の検索:"
+
+#: ../data/ui/world.ui.h:1
+msgid "Select <b>New</b> to add a world clock"
+msgstr "世界時計を追加するには<b>新規</b>を選択します"
+
+#: ../data/ui/world.ui.h:2
+msgid "Sunrise"
+msgstr "日の出"
+
+#: ../data/ui/world.ui.h:3
+msgid "Sunset"
+msgstr "日の入"
+
+#~ msgid "_New"
+#~ msgstr "新規(_N)"
+
+#~ msgid "Split"
+#~ msgstr "スプリット"
+
+#~ msgid "Total"
+#~ msgstr "合計"
+
+#~ msgid "Done"
+#~ msgstr "完了"
+
+#~ msgid "Gnome Clocks"
+#~ msgstr "Gnome Clocks"
+
+#~ msgid "About Clocks"
+#~ msgstr "このアプリケーションについて"
+
+#~ msgid "Edit"
+#~ msgstr "編集"
+
+#~ msgid "Laps"
+#~ msgstr "ラップ"
