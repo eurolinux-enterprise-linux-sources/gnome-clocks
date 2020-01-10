@@ -1,6 +1,54 @@
-gnome-clocks 3.22.1
+gnome-clocks 3.28.0
 ===================
 
+ * Search: workaround crash due to libgweather serialization
+ * Updated translations
+
+gnome-clocks 3.27.1
+===================
+
+ * World clocks: add UTC and "Anywhere on Earth" clocks
+ * Updated translations
+
+gnome-clocks 3.26.1
+===================
+
+ * Updated translations
+
+gnome-clocks 3.26.0
+===================
+
+ * Fix installation of locale data
+ * Updated translations
+
+gnome-clocks 3.25.90
+===================
+
+ * Updated translations
+
+gnome-clocks 3.25.2
+===================
+
+ * Converted World clocks and Alarms to GtkFlowBox
+ * Require Meson 0.41.0
+ * Updated translations
+
+gnome-clocks 3.25.1
+===================
+
+ * World clocks: show state name when available
+ * Switched to the Meson build system
+ * Updated translations
+
+gnome-clocks 3.24.0
+===================
+
+ * Updated translations
+
+gnome-clocks 3.23.90
+====================
+
+ * Withdraw notifications when the application receives focus
  * Misc bugfixes
  * Updated translations
 

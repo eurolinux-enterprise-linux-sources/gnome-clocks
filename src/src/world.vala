@@ -20,14 +20,9 @@ namespace Clocks {
 namespace World {
 
 public class Item : Object, ContentItem {
-    private static Gdk.Pixbuf? day_pixbuf = Utils.load_image ("day.png");
-    private static Gdk.Pixbuf? night_pixbuf = Utils.load_image ("night.png");
-
     public GWeather.Location location { get; set; }
 
     public bool automatic { get; set; default = false; }
-
-    public string title_icon { get; set; default = null; }
 
     public bool selectable { get; set; default = true; }
 
@@ -37,8 +32,12 @@ public class Item : Object, ContentItem {
         get {
             // We store it in a _name member even if we overwrite it every time
             // since the abstract name property does not return an owned string
-            if (contry_name != null) {
-                _name = "%s, %s".printf (city_name, contry_name);
+            if (country_name != null) {
+                if (state_name != null) {
+                    _name = "%s, %s, %s".printf (city_name, state_name, country_name);
+                } else {
+                    _name = "%s, %s".printf (city_name, country_name);
+                }
             } else {
                 _name = city_name;
             }
@@ -52,11 +51,30 @@ public class Item : Object, ContentItem {
 
     public string city_name {
         owned get {
-            return location.get_city_name ();
+            var city_name = location.get_city_name ();
+            /* Named Timezones don't have city names */
+            if (city_name == null) {
+                city_name = location.get_name ();
+            }
+            return city_name;
         }
     }
 
-    public string? contry_name {
+    public string? state_name {
+        owned get {
+            GWeather.Location? parent = location.get_parent ();
+
+            if (parent != null) {
+                if (parent.get_level () == GWeather.LocationLevel.ADM1) {
+                    return parent.get_name ();
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public string? country_name {
         owned get {
             return location.get_country_name ();
         }
@@ -64,12 +82,19 @@ public class Item : Object, ContentItem {
 
     public bool is_daytime {
          get {
-            return weather_info.is_daytime ();
+            if (weather_info != null) {
+                return weather_info.is_daytime ();
+            }
+            return true;
         }
     }
 
     public string sunrise_label {
         owned get {
+            if (weather_info == null) {
+                return "-";
+            }
+
             ulong sunrise;
             if (!weather_info.get_value_sunrise (out sunrise)) {
                 return "-";
@@ -82,6 +107,10 @@ public class Item : Object, ContentItem {
 
     public string sunset_label {
         owned get {
+            if (weather_info == null) {
+                return "-";
+            }
+
             ulong sunset;
             if (!weather_info.get_value_sunset (out sunset)) {
                 return "-";
@@ -127,35 +156,23 @@ public class Item : Object, ContentItem {
         Object (location: location);
 
         var weather_time_zone = location.get_timezone ();
-        time_zone = new GLib.TimeZone (weather_time_zone.get_tzid());
+        time_zone = new GLib.TimeZone (weather_time_zone.get_tzid ());
 
         tick ();
     }
 
-    public void tick () {
+    [Signal (run = "first")]
+    public virtual signal void tick () {
         var wallclock = Utils.WallClock.get_default ();
         local_time = wallclock.date_time;
         date_time = local_time.to_timezone (time_zone);
 
         // We don't use the normal constructor since we only want static data
         // and we do not want update() to be called.
-        weather_info = (GWeather.Info) Object.new (typeof (GWeather.Info),
-                                                   location: location,
-                                                   enabled_providers: GWeather.Provider.NONE);
-    }
-
-    public void get_thumb_properties (out string text,
-                                      out string subtext,
-                                      out Gdk.Pixbuf? pixbuf,
-                                      out string css_class) {
-        text = time_label;
-        subtext = day_label;
-        if (is_daytime) {
-            pixbuf = day_pixbuf;
-            css_class = "light";
-        } else {
-            pixbuf = night_pixbuf;
-            css_class = "dark";
+        if (location.has_coords ()) {
+            weather_info = (GWeather.Info) Object.new (typeof (GWeather.Info),
+                                                       location: location,
+                                                       enabled_providers: GWeather.Provider.NONE);
         }
     }
 
@@ -179,6 +196,49 @@ public class Item : Object, ContentItem {
             }
         }
         return location != null ? new Item (location) : null;
+    }
+}
+
+[GtkTemplate (ui = "/org/gnome/clocks/ui/worldtile.ui")]
+private class Tile : Gtk.Grid {
+    private static Gdk.Pixbuf? day_pixbuf = Utils.load_image ("day.png");
+    private static Gdk.Pixbuf? night_pixbuf = Utils.load_image ("night.png");
+
+    public Item location { get; construct set; }
+
+    [GtkChild]
+    private Gtk.Image image;
+    [GtkChild]
+    private Gtk.Label time_label;
+    [GtkChild]
+    private Gtk.Widget name_icon;
+    [GtkChild]
+    private Gtk.Widget name_label;
+
+    public Tile (Item location) {
+        Object (location: location);
+
+        location.bind_property ("automatic", name_icon, "visible", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
+        location.bind_property ("name", name_label, "label", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
+        location.tick.connect (update);
+
+        update ();
+    }
+
+    private void update () {
+        if (location.is_daytime) {
+            get_style_context ().remove_class ("night");
+            image.pixbuf = day_pixbuf;
+        } else {
+            get_style_context ().add_class ("night");
+            image.pixbuf = night_pixbuf;
+        }
+
+        if (location.day_label != null && location.day_label != "") {
+            time_label.label = "%s\n<span size='xx-small'>%s</span>".printf (location.time_label, location.day_label);
+        } else {
+            time_label.label = location.time_label;
+        }
     }
 }
 
@@ -219,7 +279,7 @@ private class LocationDialog : Gtk.Dialog {
             }
         }
 
-        set_response_sensitive(1, l != null && t != null);
+        set_response_sensitive (1, l != null && t != null);
     }
 
     public Item? get_location () {
@@ -238,8 +298,6 @@ public class Face : Gtk.Stack, Clocks.Clock {
     private GLib.Settings settings;
     private Gtk.Button new_button;
     private Gtk.Button back_button;
-    private Gdk.Pixbuf? day_pixbuf;
-    private Gdk.Pixbuf? night_pixbuf;
     private Item standalone_location;
     [GtkChild]
     private Gtk.Widget empty_view;
@@ -265,9 +323,9 @@ public class Face : Gtk.Stack, Clocks.Clock {
         locations = new ContentStore ();
         settings = new GLib.Settings ("org.gnome.clocks");
 
-        locations.set_sorting((item1, item2) => {
-            var offset1 = ((Item) item1).location.get_timezone().get_offset();
-            var offset2 = ((Item) item2).location.get_timezone().get_offset();
+        locations.set_sorting ((item1, item2) => {
+            var offset1 = ((Item) item1).location.get_timezone ().get_offset ();
+            var offset2 = ((Item) item2).location.get_timezone ().get_offset ();
             if (offset1 < offset2)
                 return -1;
             if (offset1 > offset2)
@@ -275,11 +333,8 @@ public class Face : Gtk.Stack, Clocks.Clock {
             return 0;
         });
 
-        day_pixbuf = Utils.load_image ("day.png");
-        night_pixbuf = Utils.load_image ("night.png");
-
         // Translators: "New" refers to a world clock
-        new_button = new Gtk.Button.with_label (_("New"));
+        new_button = new Gtk.Button.with_label (C_("World clock", "New"));
         new_button.valign = Gtk.Align.CENTER;
         new_button.no_show_all = true;
         new_button.action_name = "win.new";
@@ -295,7 +350,10 @@ public class Face : Gtk.Stack, Clocks.Clock {
         });
         header_bar.pack_start (back_button);
 
-        content_view.bind_model (locations);
+        content_view.bind_model (locations, (item) => {
+            return new Tile ((Item)item);
+        });
+
         content_view.set_header_bar (header_bar);
 
         load ();
@@ -317,7 +375,7 @@ public class Face : Gtk.Stack, Clocks.Clock {
         // Start ticking...
         Utils.WallClock.get_default ().tick.connect (() => {
             locations.foreach ((l) => {
-                ((Item)l).tick();
+                ((Item)l).tick ();
             });
             content_view.queue_draw ();
             update_standalone ();
@@ -376,7 +434,6 @@ public class Face : Gtk.Stack, Clocks.Clock {
             item = new Item (found_location);
             item.automatic = true;
             item.selectable = false;
-            item.title_icon = "find-location-symbolic";
             locations.add (item);
         });
 
@@ -447,11 +504,14 @@ public class Face : Gtk.Stack, Clocks.Clock {
     public void reset_view () {
         standalone_location = null;
         visible_child = locations.get_n_items () == 0 ? empty_view : content_view;
+        request_header_bar_update ();
     }
 
     public void update_header_bar () {
         switch (header_bar.mode) {
         case HeaderBar.Mode.NORMAL:
+            header_bar.title = _("Clocks");
+            header_bar.subtitle = null;
             new_button.show ();
             content_view.update_header_bar ();
             break;
@@ -459,8 +519,12 @@ public class Face : Gtk.Stack, Clocks.Clock {
             content_view.update_header_bar ();
             break;
         case HeaderBar.Mode.STANDALONE:
-            header_bar.title = standalone_location.city_name;
-            header_bar.subtitle = standalone_location.contry_name;
+            if (standalone_location.state_name != null) {
+                header_bar.title = "%s, %s".printf (standalone_location.city_name, standalone_location.state_name);
+            } else {
+                header_bar.title = standalone_location.city_name;
+            }
+            header_bar.subtitle = standalone_location.country_name;
             back_button.show ();
             break;
         default:

@@ -6,60 +6,23 @@
 # Alexandre Franke <alexandre.franke@gmail.com>, 2012.
 # Alain Lojewski <allomervan@gmail.com>, 2013.
 # Bruno Cauet <brunocauet@gmail.com>, 2014.
+# Charles Monzat <superboa@hotmail.fr>, 2016, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-clocks master\n"
-"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
+"Report-Msgid-Bugs-To: https://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
 "clocks&keywords=I18N+L10N&component=general\n"
-"POT-Creation-Date: 2016-08-18 16:52+0000\n"
-"PO-Revision-Date: 2016-08-28 14:09+0200\n"
-"Last-Translator: Claude Paroz <claude@2xlibre.net>\n"
-"Language-Team: GNOME French Team <gnomefr@traduc.org>\n"
+"POT-Creation-Date: 2017-08-22 14:17+0000\n"
+"PO-Revision-Date: 2017-09-07 16:16+0200\n"
+"Last-Translator: Charles Monzat <superboa@hotmail.fr>\n"
+"Language-Team: français <gnomefr@traduc.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:6
-msgid "GNOME Clocks"
-msgstr "Horloges GNOME"
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:7
-#: data/org.gnome.clocks.desktop.in:6
-msgid "Clocks for world times, plus alarms, stopwatch and a timer"
-msgstr ""
-"Des horloges pour connaître l'heure dans le monde, régler des alarmes, "
-"chronométrer ou lancer un décompte"
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:9
-msgid ""
-"A simple and elegant clock application. It includes world clocks, alarms, a "
-"stopwatch and a timer."
-msgstr ""
-"Une application d'horloge simple et élégante. Elle inclut des horloges du "
-"monde entier, des alarmes, un chronomètre et un minuteur."
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:13
-msgid "Goals:"
-msgstr "Objectifs :"
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:15
-msgid "Show the time in different cities around the world"
-msgstr "Afficher l'heure dans différentes villes autour du monde"
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:16
-msgid "Set alarms to wake you up"
-msgstr "Régler des alarmes pour le réveil"
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:17
-msgid "Measure elapsed time with an accurate stopwatch"
-msgstr "Mesurer le temps écoulé avec un chonomètre précis"
-
-#: data/appdata/org.gnome.clocks.appdata.xml.in:18
-msgid "Set timers to properly cook your food"
-msgstr "Régler des minuteurs pour bien cuire vos aliments"
+"X-Generator: Gtranslator 2.91.7\n"
 
 #: data/gtk/help-overlay.ui:14
 msgctxt "shortcut window"
@@ -155,8 +118,67 @@ msgstr "Tout sélectionner"
 msgid "Select None"
 msgstr "Ne rien sélectionner"
 
+#: data/org.gnome.clocks.appdata.xml.in:6 data/org.gnome.clocks.desktop.in:5
+msgid "GNOME Clocks"
+msgstr "Horloges de GNOME"
+
+#: data/org.gnome.clocks.appdata.xml.in:7 data/org.gnome.clocks.desktop.in:6
+msgid "Clocks for world times, plus alarms, stopwatch and a timer"
+msgstr ""
+"Des horloges pour connaître l’heure dans le monde, régler des alarmes, "
+"chronométrer ou lancer un décompte"
+
+#: data/org.gnome.clocks.appdata.xml.in:9
+msgid ""
+"A simple and elegant clock application. It includes world clocks, alarms, a "
+"stopwatch and a timer."
+msgstr ""
+"Une application d’horloge simple et élégante. Elle inclut des horloges du "
+"monde entier, des alarmes, un chronomètre et un minuteur."
+
+#: data/org.gnome.clocks.appdata.xml.in:13
+msgid "Goals:"
+msgstr "Objectifs :"
+
+#: data/org.gnome.clocks.appdata.xml.in:15
+msgid "Show the time in different cities around the world"
+msgstr "Afficher l’heure dans différentes villes autour du monde"
+
+#: data/org.gnome.clocks.appdata.xml.in:16
+msgid "Set alarms to wake you up"
+msgstr "Régler des alarmes pour le réveil"
+
+#: data/org.gnome.clocks.appdata.xml.in:17
+msgid "Measure elapsed time with an accurate stopwatch"
+msgstr "Mesurer le temps écoulé avec un chonomètre précis"
+
+#: data/org.gnome.clocks.appdata.xml.in:18
+msgid "Set timers to properly cook your food"
+msgstr "Régler des minuteurs pour bien cuire vos aliments"
+
+#: data/org.gnome.clocks.appdata.xml.in:33
+msgid "Initial screen"
+msgstr "Écran initial"
+
+#: data/org.gnome.clocks.appdata.xml.in:37
+msgid "Alarms screen"
+msgstr "Écran des alarmes"
+
+#: data/org.gnome.clocks.appdata.xml.in:41
+msgid "Alarms setup"
+msgstr "Définition d’alarmes"
+
+#: data/org.gnome.clocks.appdata.xml.in:45
+msgid "Stopwatch screen"
+msgstr "Écran du chronomètre"
+
+#: data/org.gnome.clocks.appdata.xml.in:49
+msgid "Timer screen"
+msgstr "Écran du minuteur"
+
 #: data/org.gnome.clocks.desktop.in:3 data/org.gnome.clocks.desktop.in:4
-#: data/ui/window.ui:5 src/window.vala:235
+#: data/ui/window.ui:5 src/window.vala:64 src/window.vala:251
+#: src/world.vala:495
 msgid "Clocks"
 msgstr "Horloges"
 
@@ -173,7 +195,7 @@ msgstr "org.gnome.clocks"
 
 #: data/org.gnome.clocks.desktop.in:18
 msgid "Allows world clocks to be displayed for your time zone."
-msgstr "Permet d'afficher des horloges mondiales selon votre fuseau horaire."
+msgstr "Permet d’afficher des horloges mondiales selon votre fuseau horaire."
 
 #: data/org.gnome.clocks.gschema.xml.in:5
 msgid "Configured world clocks"
@@ -191,7 +213,7 @@ msgstr "Alarmes configurées"
 msgid "List of alarms set."
 msgstr "Liste des alarmes paramétrées."
 
-#: data/org.gnome.clocks.gschema.xml.in:19 src/timer.vala:113
+#: data/org.gnome.clocks.gschema.xml.in:19 src/timer.vala:115
 msgid "Timer"
 msgstr "Minuteur"
 
@@ -229,13 +251,13 @@ msgstr "État du panneau"
 
 #: data/org.gnome.clocks.gschema.xml.in:59
 msgid "Current clock panel."
-msgstr "Panneau d'horloge actuel."
+msgstr "Panneau d’horloge actuel."
 
-#: data/ui/alarmringing.ui:39 src/alarm.vala:119 src/stopwatch.vala:199
+#: data/ui/alarmringing.ui:39 src/alarm.vala:118 src/stopwatch.vala:199
 msgid "Stop"
 msgstr "Arrêter"
 
-#: data/ui/alarmringing.ui:59 src/alarm.vala:120
+#: data/ui/alarmringing.ui:59 src/alarm.vala:119
 msgid "Snooze"
 msgstr "Répéter"
 
@@ -267,7 +289,7 @@ msgstr "Répéter chaque"
 msgid "Active"
 msgstr "Activer"
 
-#: data/ui/alarm.ui:31
+#: data/ui/alarm.ui:32
 msgid "Select <b>New</b> to add an alarm"
 msgstr "Selectionner <b>Nouvelle</b> pour ajouter une alarme"
 
@@ -279,7 +301,7 @@ msgstr "Démarrer"
 msgid "Reset"
 msgstr "Recommencer"
 
-#: data/ui/timer.ui:397 src/timer.vala:210 src/timer.vala:221
+#: data/ui/timer.ui:397 src/timer.vala:213 src/timer.vala:224
 msgid "Pause"
 msgstr "Pause"
 
@@ -291,33 +313,33 @@ msgstr "_Ajouter"
 msgid "Search for a city:"
 msgstr "Rechercher une ville :"
 
-#: data/ui/world.ui:31
+#: data/ui/world.ui:32
 msgid "Select <b>New</b> to add a world clock"
 msgstr "Selectionner <b>Nouvelle</b> pour ajouter une horloge mondiale"
 
-#: data/ui/world.ui:122
+#: data/ui/world.ui:123
 msgid "Sunrise"
 msgstr "Lever du soleil"
 
-#: data/ui/world.ui:136
+#: data/ui/world.ui:137
 msgid "Sunset"
 msgstr "Coucher du soleil"
 
-#: src/alarm.vala:117 src/alarm.vala:372 src/alarm.vala:545
+#: src/alarm.vala:116 src/alarm.vala:416 src/alarm.vala:595
 msgid "Alarm"
 msgstr "Alarme"
 
-#: src/alarm.vala:313
+#: src/alarm.vala:350
 msgid "Edit Alarm"
-msgstr "Modifier l'alarme"
+msgstr "Modifier l’alarme"
 
-#: src/alarm.vala:313
+#: src/alarm.vala:350
 msgid "New Alarm"
 msgstr "Nouvelle alarme"
 
 #. Translators: "New" refers to an alarm
-#. Translators: "New" refers to a world clock
-#: src/alarm.vala:574 src/world.vala:280
+#: src/alarm.vala:624
+msgctxt "Alarm"
 msgid "New"
 msgstr "Nouvelle"
 
@@ -333,15 +355,15 @@ msgstr "Chronomètre"
 msgid "Lap"
 msgstr "Tour"
 
-#: src/stopwatch.vala:209 src/timer.vala:205
+#: src/stopwatch.vala:209 src/timer.vala:208
 msgid "Continue"
 msgstr "Continuer"
 
-#: src/timer.vala:125
+#: src/timer.vala:127
 msgid "Time is up!"
 msgstr "Le temps est écoulé !"
 
-#: src/timer.vala:126
+#: src/timer.vala:128
 msgid "Timer countdown finished"
 msgstr "Le décompte est fini"
 
@@ -385,35 +407,35 @@ msgstr "En semaine"
 msgid "Weekends"
 msgstr "Les fins de semaine"
 
-#: src/widgets.vala:538 src/widgets.vala:553
+#: src/widgets.vala:232 src/widgets.vala:247
 msgid "Click on items to select them"
 msgstr "Cliquer sur un élément pour le sélectionner"
 
-#: src/widgets.vala:540
+#: src/widgets.vala:234
 #, c-format
-msgid "%d selected"
-msgid_plural "%d selected"
-msgstr[0] "%d sélectionné"
-msgstr[1] "%d sélectionnés"
+msgid "%u selected"
+msgid_plural "%u selected"
+msgstr[0] "%u sélectionné"
+msgstr[1] "%u sélectionnés"
 
-#: src/widgets.vala:612
+#: src/widgets.vala:333
 msgid "Delete"
 msgstr "Supprimer"
 
-#: src/widgets.vala:710
+#: src/widgets.vala:477
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/window.vala:208
+#: src/window.vala:224
 #, c-format
 msgid "Failed to show help: %s"
-msgstr "Impossible d'afficher l'aide : %s"
+msgstr "Impossible d’afficher l’aide : %s"
 
-#: src/window.vala:238
+#: src/window.vala:254
 msgid "Utilities to help you with the time."
 msgstr "Des utilitaires pour vous aider à gérer le temps."
 
-#: src/window.vala:243
+#: src/window.vala:259
 msgid "translator-credits"
 msgstr ""
 "Maël Lavault\n"
@@ -421,16 +443,24 @@ msgstr ""
 "Alain Lojewski\n"
 "Bruno Cauet"
 
-#. If it is Dec 31st here and Jan 1st there (d = 1), then "tomorrow"
-#: src/world.vala:108 src/world.vala:111
+#. If it is Jan 1st there, and not Jan 2nd here, then it must be
+#. Dec 31st here, so return "tomorrow"
+#: src/world.vala:122 src/world.vala:126
 msgid "Tomorrow"
 msgstr "Demain"
 
-#. If it is Jan 1st here and Dec 31st there (t = 1), then "yesterday"
-#: src/world.vala:108 src/world.vala:111
+#. If it is Jan 1st here, and not Jan 2nd there, then it must be
+#. Dec 31st there, so return "yesterday"
+#: src/world.vala:122 src/world.vala:126
 msgid "Yesterday"
 msgstr "Hier"
 
-#: src/world.vala:258
+#: src/world.vala:300
 msgid "World"
 msgstr "Monde"
+
+#. Translators: "New" refers to a world clock
+#: src/world.vala:319
+msgctxt "World clock"
+msgid "New"
+msgstr "Nouvelle"
