@@ -22,7 +22,13 @@
     <desc>Ενημερώστε την ειδοποίησή σας ή απενεργοποιήστε την προσωρινά.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
-      <mal:name> Παπαναστασίου Νικολέτα</mal:name>
+      <mal:name>Ελληνική μεταφραστική ομάδα GNOME</mal:name>
+      <mal:email>team@gnome.gr</mal:email>
+      <mal:years>2013</mal:years>
+    </mal:credit>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Παπαναστασίου Νικολέτα</mal:name>
       <mal:email>papa.nikoleta@ymail.com</mal:email>
       <mal:years>2013</mal:years>
     </mal:credit>
@@ -30,7 +36,7 @@
 
   <title>Επεξεργασία ειδοποίησης</title>
 
-  <p>Επεξεργαστείτε την ειδοποίησή σας για να αλλάξετε το πότε θα χτυπάει, για μετονομασία ή για επανενεργοποίηση.</p>
+  <p>Επεξεργαστείτε την ειδοποίησή σας για να αλλάξετε το πότε θα χτυπάει, για να την μετονομάσετε ή να την επανεργοποιήσετε.</p>
 
   <steps>
     <item>
@@ -40,7 +46,7 @@
       <p>Επιλέξτε το ξυπνητήρι που θέλετε να επεξεργαστείτε.</p>
     </item>
     <item>
-      <p>Ενημερώστε την ειδοποίηση και πιέστε <gui style="button">Τέλος</gui> για να τελειώσετε με την επεξεργασία της.</p>
+      <p>Ενημερώστε την ειδοποίηση και πιέστε <gui style="button">Ολοκλήρωση</gui> για να τελειώσετε με την επεξεργασία της.</p>
     </item>
   </steps>
 

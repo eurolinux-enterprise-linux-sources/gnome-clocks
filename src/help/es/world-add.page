@@ -18,13 +18,17 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Añadir un reloj para una ciudad nueva a su lista de relojes del mundo.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
       <mal:name>Daniel Mustieles</mal:name>
       <mal:email>daniel.mustieles@gmail.com</mal:email>
-      <mal:years>2013</mal:years>
+      <mal:years>2013 - 2015</mal:years>
     </mal:credit>
   </info>
 

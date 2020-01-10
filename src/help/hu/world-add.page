@@ -18,6 +18,10 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Új városhoz tartozó óra hozzáadása a világórák listájához.</desc>
   

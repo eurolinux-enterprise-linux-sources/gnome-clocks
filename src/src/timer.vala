@@ -45,19 +45,18 @@ public class CountdownFrame : AnalogFrame {
     }
 
     public override void draw_progress (Cairo.Context cr, int center_x, int center_y, int radius) {
+        var progress = get_progress ();
         var context = get_style_context ();
 
         context.save ();
         context.add_class ("progress");
 
-        cr.set_line_width (LINE_WIDTH);
-        cr.set_line_cap  (Cairo.LineCap.ROUND);
+        var color = context.get_color (context.get_state ());
 
-        var color = context.get_color (Gtk.StateFlags.NORMAL);
-
-        var progress = get_progress ();
         cr.arc (center_x, center_y, radius - LINE_WIDTH / 2, 1.5  * Math.PI, (1.5 + (1 - progress) * 2 ) * Math.PI);
         Gdk.cairo_set_source_rgba (cr, color);
+        cr.set_line_width (LINE_WIDTH);
+        cr.set_line_cap  (Cairo.LineCap.ROUND);
         cr.stroke ();
 
         context.restore ();
@@ -88,6 +87,8 @@ public class Face : Gtk.Stack, Clocks.Clock {
     private AnalogFrame setup_frame;
     [GtkChild]
     private Gtk.Grid grid_spinbuttons;
+    [GtkChild]
+    private Gtk.Grid grid_labels;
     [GtkChild]
     private Gtk.SpinButton h_spinbutton;
     [GtkChild]
@@ -128,6 +129,7 @@ public class Face : Gtk.Stack, Clocks.Clock {
 
         // Force LTR since we do not want to reverse [hh] : [mm] : [ss]
         grid_spinbuttons.set_direction (Gtk.TextDirection.LTR);
+        grid_labels.set_direction (Gtk.TextDirection.LTR);
 
         reset ();
     }
@@ -142,6 +144,40 @@ public class Face : Gtk.Stack, Clocks.Clock {
     private bool show_leading_zeros (Gtk.SpinButton spin_button) {
         spin_button.set_text ("%02i".printf(spin_button.get_value_as_int ()));
         return true;
+    }
+
+    [GtkCallback]
+    private int input_minutes (Gtk.SpinButton spin_button, out double new_value) {
+        int entered_value = int.parse (spin_button.get_text ());
+
+        // if input entered is not within bounds then it will carry the
+        // extra portion to hours field
+        if (entered_value > 59) {
+            int current_hours = h_spinbutton.get_value_as_int ();
+            h_spinbutton.set_value (double.min (99, current_hours + entered_value / 60));
+        }
+        new_value = entered_value % 60;
+        return 1;
+    }
+
+    [GtkCallback]
+    private int input_seconds (Gtk.SpinButton spin_button, out double new_value) {
+        int entered_value = int.parse (spin_button.get_text ());
+
+        // if input entered is not within bounds then it will carry the
+        // extra portion to minutes field and hours field accordingly
+        if (entered_value > 59) {
+            int current_minutes = m_spinbutton.get_value_as_int ();
+            int new_minutes = current_minutes + entered_value / 60;
+            if (new_minutes > 59) {
+                int current_hours = h_spinbutton.get_value_as_int ();
+                h_spinbutton.set_value (double.min (99, current_hours + new_minutes / 60));
+                new_minutes = new_minutes % 60;
+            }
+            m_spinbutton.set_value (new_minutes);
+        }
+        new_value = entered_value % 60;
+        return 1;
     }
 
     [GtkCallback]
@@ -287,6 +323,16 @@ public class Face : Gtk.Stack, Clocks.Clock {
         if (visible_child == setup_frame) {
             start_button.grab_focus ();
         }
+    }
+
+    public bool escape_pressed () {
+        if (state == State.STOPPED) {
+            return false;
+        }
+
+        reset ();
+
+        return true;
     }
 }
 

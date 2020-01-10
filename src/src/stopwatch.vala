@@ -26,6 +26,7 @@ public class Frame : AnalogFrame {
     public void update (int s, double ms) {
         seconds = s;
         millisecs = ms;
+        queue_draw ();
     }
 
     public void reset () {
@@ -41,10 +42,14 @@ public class Frame : AnalogFrame {
         cr.set_line_width (LINE_WIDTH);
         cr.set_line_cap  (Cairo.LineCap.ROUND);
 
-        var color = context.get_color (Gtk.StateFlags.NORMAL);
+        var color = context.get_color (context.get_state ());
         var progress = ((double) seconds + millisecs) / 60;
         if (progress > 0) {
-            cr.arc (center_x, center_y, radius - LINE_WIDTH / 2, 1.5  * Math.PI, (1.5 + progress * 2 ) * Math.PI);
+            cr.arc (center_x,
+                    center_y,
+                    radius - LINE_WIDTH / 2,
+                    1.5  * Math.PI,
+                    (1.5 + progress * 2 ) * Math.PI);
             Gdk.cairo_set_source_rgba (cr, color);
             cr.stroke ();
         }
@@ -55,10 +60,14 @@ public class Frame : AnalogFrame {
         context.add_class ("progress-fast");
 
         cr.set_line_width (LINE_WIDTH - 2);
-        color = context.get_color (Gtk.StateFlags.NORMAL);
+        color = context.get_color (context.get_state ());
         progress = millisecs;
         if (progress > 0) {
-            cr.arc (center_x, center_y, radius - LINE_WIDTH / 2, (1.5 + progress * 2 ) * Math.PI - 0.1, (1.5 + progress * 2 ) * Math.PI + 0.1);
+            cr.arc (center_x,
+                    center_y,
+                    radius - LINE_WIDTH / 2,
+                    (1.5 + progress * 2 ) * Math.PI - 0.1,
+                    (1.5 + progress * 2 ) * Math.PI + 0.1);
             Gdk.cairo_set_source_rgba (cr, color);
             cr.stroke ();
         }
@@ -264,12 +273,6 @@ public class Face : Gtk.Box, Clocks.Clock {
         }
 
         var row = new LapsRow (n_label, split_label, tot_label);
-
-        // FIXME: we can remove this if ListBox gains support for :first-child
-        if (current_lap == 1) {
-            row.get_style_context ().add_class ("first-lap-row");
-        }
-
         laps_list.prepend (row);
         row.slide_in ();
         laps_scrollwin.vadjustment.value = laps_scrollwin.vadjustment.lower;
@@ -316,6 +319,23 @@ public class Face : Gtk.Box, Clocks.Clock {
 
     public override void grab_focus () {
         left_button.grab_focus ();
+    }
+
+    public bool escape_pressed () {
+        switch (state) {
+        case State.RESET:
+            return false;
+        case State.STOPPED:
+            reset ();
+            break;
+        case State.RUNNING:
+            stop ();
+            break;
+        default:
+            assert_not_reached ();
+        }
+
+        return true;
     }
 }
 

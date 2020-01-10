@@ -18,6 +18,10 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Добавьте часы для нового города к списку ваших мировых часов.</desc>
   
@@ -53,7 +57,10 @@
   <p>Если вы не видите свой город в списке, возможно, информация о нём пока не доступна. Вместо этого можно добавить ближайший крупный город или столицу страны.</p>
 
   <note style="info">
-    <p>При подключении к Интернету в списке мировых часов появятся часы вашего текущего местоположения, но они исчезнут при отключении от сети. Также эти часы автоматически обновятся, если вы переместите компьютер в другой город.</p>
+    <p>The clock for your current location will automatically be added to your
+    world clocks when you are connected to the Internet. It will not be shown
+    if you disconnect from the Internet and it will automatically update if you
+    take your computer to a different city.</p>
   </note>
 
 </page>

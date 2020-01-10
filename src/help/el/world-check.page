@@ -22,13 +22,19 @@
     <desc>Δείτε τις ώρες ανατολής και δύσης για μια πόλη.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
-      <mal:name> Παπαναστασίου Νικολέτα</mal:name>
+      <mal:name>Ελληνική μεταφραστική ομάδα GNOME</mal:name>
+      <mal:email>team@gnome.gr</mal:email>
+      <mal:years>2013</mal:years>
+    </mal:credit>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Παπαναστασίου Νικολέτα</mal:name>
       <mal:email>papa.nikoleta@ymail.com</mal:email>
       <mal:years>2013</mal:years>
     </mal:credit>
   </info>
 
-  <title>Τί άλλο δείχνουν τα παγκόσμια ρολόγια;</title>
+  <title>Τι άλλο δείχνουν τα παγκόσμια ρολόγια;</title>
 
   <p>Εκτός από την εμφάνιση της ώρας, μπορείτε επίσης να δείτε τις σημερινές ώρες ανατολής και δύσης. Θα δείτε επίσης αν η πόλη είναι μία μέρα μπροστά ή πίσω από εσάς.</p>
 

@@ -19,16 +19,22 @@
       <years>2013</years>
     </credit>
 
-    <desc>Χρησιμοποιήστε μια αντίστροφη μέτρηση για να ειδοποιηθείτε όταν ένα χρονικό διάστημα έχει παρέλθει.</desc>
+    <desc>Χρησιμοποιήστε την αντίστροφη μέτρηση για να ειδοποιηθείτε όταν ένα χρονικό διάστημα έχει παρέλθει.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
-      <mal:name> Παπαναστασίου Νικολέτα</mal:name>
+      <mal:name>Ελληνική μεταφραστική ομάδα GNOME</mal:name>
+      <mal:email>team@gnome.gr</mal:email>
+      <mal:years>2013</mal:years>
+    </mal:credit>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Παπαναστασίου Νικολέτα</mal:name>
       <mal:email>papa.nikoleta@ymail.com</mal:email>
       <mal:years>2013</mal:years>
     </mal:credit>
   </info>
 
-  <title>Ρυθμίστε τον χρονοδιακόπτη</title>
+  <title>Ρύθμιση του χρονοδιακόπτη</title>
 
   <p>Ρυθμίστε την ώρα για μια δευτερόλεπτο προς δευτερόλεπτο αντίστροφη μέτρηση μέχρι το μηδέν. Θα ειδοποιηθείτε όταν η αντίστροφη μέτρηση έχει τελειώσει.</p>
 
@@ -40,7 +46,7 @@
       <p>Ρυθμίστε την ώρα για την αντίστροφη μέτρηση.</p>
     </item>
     <item>
-      <p>Πιέστε το κουμπί <gui style="button">Εκκίνηση</gui> για να αρχίσετε την αντίστροφη μέτρηση.</p>
+      <p>Πιέστε το κουμπί <gui style="button">Έναρξη</gui> για να αρχίσετε την αντίστροφη μέτρηση.</p>
     </item>
   </steps>
 

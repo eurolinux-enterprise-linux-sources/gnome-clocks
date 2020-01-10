@@ -1,61 +1,76 @@
 Name:           gnome-clocks
-Version:        3.14.1
-Release:        2%{?dist}
+Version:        3.22.1
+Release:        1%{?dist}
 Summary:        Clock application designed for GNOME 3
 
 License:        GPLv2+
-URL:            https://live.gnome.org/GnomeClocks
-Source0:        http://download.gnome.org/sources/gnome-clocks/3.14/%{name}-%{version}.tar.xz
-
-Patch0: translations.patch
+URL:            https://wiki.gnome.org/Apps/Clocks
+Source0:        https://download.gnome.org/sources/gnome-clocks/3.22/%{name}-%{version}.tar.xz
 
 BuildRequires:  gtk3-devel
 Buildrequires:  gobject-introspection-devel
 BuildRequires:  libcanberra-devel
 BuildRequires:  libgweather-devel >= 3.13.91
 BuildRequires:  gnome-desktop3-devel
-BuildRequires:  vala-tools
-BuildRequires:  intltool desktop-file-utils glib2-devel itstool
+BuildRequires:  vala
+BuildRequires:  desktop-file-utils glib2-devel itstool
 BuildRequires:  geoclue2-devel
 BuildRequires:  geocode-glib-devel
+BuildRequires:  gettext
+BuildRequires:  gsound-devel
+BuildRequires:  libappstream-glib
 
 %description
 Clock application designed for GNOME 3
 
 %prep
 %setup -q
-%patch0 -p1
 
 %build
 %configure
 make V=1 %{?_smp_mflags}
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
-desktop-file-validate $RPM_BUILD_ROOT/%{_datadir}/applications/org.gnome.clocks.desktop
+%make_install
 %find_lang gnome-clocks --with-gnome
 
+# Update the screenshot shown in the software center
+#
+# NOTE: It would be *awesome* if this file was pushed upstream.
+#
+# See http://people.freedesktop.org/~hughsient/appdata/#screenshots for more details.
+#
+appstream-util replace-screenshots $RPM_BUILD_ROOT%{_datadir}/appdata/org.gnome.clocks.appdata.xml \
+  https://raw.githubusercontent.com/hughsie/fedora-appstream/master/screenshots-extra/org.gnome.clocks/a.png \
+  https://raw.githubusercontent.com/hughsie/fedora-appstream/master/screenshots-extra/org.gnome.clocks/b.png \
+  https://raw.githubusercontent.com/hughsie/fedora-appstream/master/screenshots-extra/org.gnome.clocks/c.png \
+  https://raw.githubusercontent.com/hughsie/fedora-appstream/master/screenshots-extra/org.gnome.clocks/d.png \
+  https://raw.githubusercontent.com/hughsie/fedora-appstream/master/screenshots-extra/org.gnome.clocks/e.png 
+
+%check
+desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/org.gnome.clocks.desktop
+
 %post
-/bin/touch --no-create %{_datadir}/icons/hicolor %{_datadir}/icons/HighContrast &>/dev/null || :
+/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
 %postun
 if [ $1 -eq 0 ] ; then
-    /bin/touch --no-create %{_datadir}/icons/hicolor %{_datadir}/icons/HighContrast &>/dev/null
+    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
     /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
-    /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/HighContrast &>/dev/null || :
     /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 fi
 
 %posttrans
 /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
-/usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/HighContrast &>/dev/null || :
 /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 
 %files -f gnome-clocks.lang
-%doc AUTHORS COPYING README NEWS
+%doc AUTHORS README NEWS
+%license COPYING
 %{_bindir}/gnome-clocks
 %{_datadir}/gnome-clocks
-%{_datadir}/icons/*/*/apps/gnome-clocks.png
+%{_datadir}/icons/hicolor/*/apps/org.gnome.clocks.png
+%{_datadir}/icons/hicolor/symbolic/apps/org.gnome.clocks-symbolic.svg
 %{_datadir}/appdata/org.gnome.clocks.appdata.xml
 %{_datadir}/applications/org.gnome.clocks.desktop
 %{_datadir}/dbus-1/services/org.gnome.clocks.service
@@ -66,6 +81,10 @@ fi
 
 
 %changelog
+* Thu Feb 23 2017 Matthias Clasen <mclasen@redhat.com> - 3.22.1-1
+- Rebase to 3.22.1
+  Resolves: #1386881
+
 * Fri Jul  1 2016 Matthias Clasen <mclasen@redhat.com> - 3.14.1-2
 - Update translations
   Resolves: #1272479

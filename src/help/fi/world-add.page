@@ -18,6 +18,10 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Uuden kaupungin lisääminen maailman kellojen luetteloon.</desc>
   
@@ -53,7 +57,10 @@
   <p>Jos kaupunkia ei löydy luettelosta, sitä ei luultavasti ole saatavilla tällä hetkellä. Kannattaa kokeilla lähintä suurempaa kaupunkia tai pääkaupunkia yritetyn sijasta.</p>
 
   <note style="info">
-    <p>Nykyinen sijaintisi lisätään automaattisesti maailman kellojen luetteloon ollessasi yhteydessä internetiin. Sitä ei näytetä, jos yhteys katkeaa ja se päivitetään automaattisesti sijainnin muuttuessa.</p>
+    <p>The clock for your current location will automatically be added to your
+    world clocks when you are connected to the Internet. It will not be shown
+    if you disconnect from the Internet and it will automatically update if you
+    take your computer to a different city.</p>
   </note>
 
 </page>

@@ -18,6 +18,10 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Engadir un reloxo para unha nova cidade da lista de reloxos mundiais.</desc>
   
@@ -53,7 +57,10 @@
   <p>Se non ve a súa cidade na lista probabelmente non estea dispoñíbel neste momento. Debería probar engadindo a cidade cercana máis grande ou a capital do seu pais no lugar.</p>
 
   <note style="info">
-    <p>O reloxo para a súa localización actual engadirase automaticamente aos seus reloxos mundiais cando se conecte a Internet. Non se mostrará se está desconectado de Internet e actualizarase cando leve o computador a unha cidade distinta.</p>
+    <p>The clock for your current location will automatically be added to your
+    world clocks when you are connected to the Internet. It will not be shown
+    if you disconnect from the Internet and it will automatically update if you
+    take your computer to a different city.</p>
   </note>
 
 </page>

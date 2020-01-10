@@ -18,13 +18,17 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Tambahkan suatu jam bagi kota baru ke daftar jam dunia Anda.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
       <mal:name>Andika Triwidada</mal:name>
       <mal:email>andika@gmail.com</mal:email>
-      <mal:years>2013.</mal:years>
+      <mal:years>2013, 2016.</mal:years>
     </mal:credit>
   </info>
 
@@ -53,7 +57,7 @@
   <p>Bila Anda tak melihat kota Anda di dalam daftar, mungkin tak tersedia saat ini. Anda mesti mencoba kota lebih besar yang paling dekat atau ibu kota negara Anda sebagai gantinya.</p>
 
   <note style="info">
-    <p>Jam untuk lokasi Anda saat ini akan secara otomatis ditambahkan ke jam dunia Anda ketika Anda tersambung ke Internet. Tak akan ditampilkan ketika Anda terputus dari Internet dan akan secara otomatis mutakhir bila Anda membawa komputer Anda ke kota lain.</p>
+    <p>Jam untuk lokasi Anda saat ini akan secara otomatis ditambahkan ke jam dunia Anda ketika Anda tersambung ke Internet. Itu tak akan ditampilkan ketika Anda terputus dari Internet dan akan secara otomatis mutakhir bila Anda membawa komputer Anda ke kota lain.</p>
   </note>
 
 </page>

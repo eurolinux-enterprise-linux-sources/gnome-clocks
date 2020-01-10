@@ -27,7 +27,8 @@ public class Application : Gtk.Application {
     const GLib.ActionEntry[] action_entries = {
         { "stop-alarm", null, "s" },
         { "snooze-alarm", null, "s" },
-        { "quit", on_quit_activate }
+        { "quit", on_quit_activate },
+        { "add-location", on_add_location_activate, "v" }
     };
 
     private SearchProvider search_provider;
@@ -45,6 +46,8 @@ public class Application : Gtk.Application {
 
     public Application () {
         Object (application_id: "org.gnome.clocks");
+
+        Gtk.Window.set_default_icon_name ("org.gnome.clocks");
 
         add_main_option_entries (option_entries);
         add_action_entries (action_entries, this);
@@ -75,18 +78,29 @@ public class Application : Gtk.Application {
     }
 
     protected override void activate () {
+        base.activate ();
+
         ensure_window ();
         window.present ();
+    }
+
+    private void update_theme (Gtk.Settings settings) {
+        string theme_name;
+
+        settings.get("gtk-theme-name", out theme_name);
+        Utils.load_theme_css (theme_name);
     }
 
     protected override void startup () {
         base.startup ();
 
-        // FIXME: move the css in gnome-theme-extras
-        var css_provider = Utils.load_css ("gnome-clocks.css");
-        Gtk.StyleContext.add_provider_for_screen (Gdk.Screen.get_default(),
-                                                  css_provider,
-                                                  Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+        Utils.load_main_css ();
+
+        var settings = Gtk.Settings.get_default ();
+        settings.notify["gtk-theme-name"].connect(() => {
+            update_theme (settings);
+        });
+        update_theme (settings);
 
         add_accelerator ("<Primary>n", "win.new", null);
         add_accelerator ("<Primary>a", "win.select-all", null);
@@ -99,6 +113,22 @@ public class Application : Gtk.Application {
         }
 
         return -1;
+    }
+
+    public void on_add_location_activate (GLib.SimpleAction action, GLib.Variant? parameter) {
+        if (parameter == null) {
+            return;
+        }
+
+        ensure_window ();
+        window.show_world ();
+        window.present ();
+
+        var world = GWeather.Location.get_world ();
+        var location = world.deserialize (parameter.get_child_value(0));
+        if (location != null) {
+            window.add_world_location (location);
+        }
     }
 
     void on_quit_activate () {

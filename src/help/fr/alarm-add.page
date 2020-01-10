@@ -22,6 +22,12 @@
     <desc>Utiliser une alarme pour paramétrer un rappel pour vous-même.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Jean-Baptiste Holcroft</mal:name>
+      <mal:email>jean-baptiste@holcroft.fr</mal:email>
+      <mal:years>2016</mal:years>
+    </mal:credit>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
       <mal:name>Fievez Yoann</mal:name>
       <mal:email>yoann.fievez@gmail.com</mal:email>
       <mal:years>2013</mal:years>

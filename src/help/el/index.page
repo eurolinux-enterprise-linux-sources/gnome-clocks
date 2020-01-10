@@ -20,7 +20,13 @@
     <desc>Χρησιμοποιήστε το <app>Ρολόγια</app> σαν χρονόμετρο, χρονοδιακόπτη, για να ρυθμίσετε ξυπνητήρια και για να ελέγξετε την ώρα σε διαφερετικές πόλεις στον κόσμο.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
-      <mal:name> Παπαναστασίου Νικολέτα</mal:name>
+      <mal:name>Ελληνική μεταφραστική ομάδα GNOME</mal:name>
+      <mal:email>team@gnome.gr</mal:email>
+      <mal:years>2013</mal:years>
+    </mal:credit>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Παπαναστασίου Νικολέτα</mal:name>
       <mal:email>papa.nikoleta@ymail.com</mal:email>
       <mal:years>2013</mal:years>
     </mal:credit>
@@ -33,7 +39,7 @@
   <section id="world-clock" style="2column">
     <title>Παγκόσμια ρολόγια</title>
 
-    <p>Δείτε την ώρα σε διαφορετικές πόλεις στον κόσμο στην ίδια οθόνη. Μπορείτε επίσης να εέγξετε αν είναι ακόμη η ίδια μέρα στις επιλεγμένες πόλεις, όπως και την ώρα ανατολής και δύσης.</p>
+    <p>Δείτε την ώρα σε διαφορετικές πόλεις ανά τον κόσμο στην ίδια οθόνη. Μπορείτε επίσης να ελέγξετε αν είναι ακόμη η ίδια μέρα στις επιλεγμένες πόλεις, όπως και την ώρα ανατολής και δύσης.</p>
 
   </section>
 

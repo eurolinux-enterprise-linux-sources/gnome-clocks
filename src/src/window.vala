@@ -61,6 +61,7 @@ public class Window : Gtk.ApplicationWindow {
         int width, height;
         settings.get ("size", "(ii)", out width, out height);
         resize (width, height);
+        set_title (_("Clocks"));
 
         panels = new Gtk.Widget[N_PANELS];
 
@@ -81,6 +82,8 @@ public class Window : Gtk.ApplicationWindow {
         stack_switcher.set_stack (stack);
 
         var stack_id = stack.notify["visible-child"].connect (() => {
+            var help_overlay = get_help_overlay ();
+            help_overlay.view_name = Type.from_instance(stack.visible_child).name();
             update_header_bar ();
         });
 
@@ -113,11 +116,38 @@ public class Window : Gtk.ApplicationWindow {
             stack.child_set_property (timer, "needs-attention", timer.state == Timer.Face.State.RUNNING);
         });
 
+        unowned Gtk.BindingSet binding_set = Gtk.BindingSet.by_class (get_class ());
+
+        // plain ctrl+page_up/down is easten by the scrolled window...
+        Gtk.BindingEntry.add_signal (binding_set,
+                                     Gdk.Key.Page_Up,
+                                     Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MOD1_MASK,
+                                     "change-page", 1,
+                                     typeof(int), -1);
+        Gtk.BindingEntry.add_signal (binding_set,
+                                     Gdk.Key.Page_Down,
+                                     Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MOD1_MASK,
+                                     "change-page", 1,
+                                     typeof(int), 1);
+
         stack.visible_child = panels[settings.get_enum ("panel-id")];
 
         update_header_bar ();
 
         show_all ();
+    }
+
+    [Signal(action = true)]
+    public virtual signal void change_page (int offset) {
+        int page;
+
+        stack.child_get (stack.visible_child, "position", out page);
+        page += offset;
+        if (page >= 0 && page < panels.length) {
+            stack.visible_child = panels[page];
+        } else {
+            stack.error_bell ();
+        }
     }
 
     private void on_new_activate () {
@@ -137,18 +167,43 @@ public class Window : Gtk.ApplicationWindow {
         stack.visible_child = panels[PanelId.WORLD];;
     }
 
+    public void add_world_location (GWeather.Location location) {
+        ((World.Face) panels[PanelId.WORLD]).add_location (location);
+    }
+
     public override bool key_press_event (Gdk.EventKey event) {
         uint keyval;
-        if (((Gdk.Event*)(&event))->get_keyval (out keyval) && keyval == Gdk.Key.Escape) {
-            return ((Clock) stack.visible_child).escape_pressed ();
+        bool handled = false;
+
+        if (((Gdk.Event)(event)).get_keyval (out keyval) && keyval == Gdk.Key.Escape) {
+            handled = ((Clock) stack.visible_child).escape_pressed ();
+        }
+
+        if (handled) {
+            return true;
         }
 
         return base.key_press_event (event);
     }
 
+    public override bool button_release_event (Gdk.EventButton event) {
+        const uint BUTTON_BACK = 8;
+        uint button;
+
+        if (((Gdk.Event)(event)).get_button (out button) && button == BUTTON_BACK) {
+            ((Clock) stack.visible_child).back ();
+            return true;
+        }
+
+        return base.button_release_event (event);
+    }
+
     protected override bool configure_event (Gdk.EventConfigure event) {
         if (get_realized () && !(Gdk.WindowState.MAXIMIZED in get_window ().get_state ())) {
-            settings.set ("size", "(ii)", event.width, event.height);
+            int width, height;
+
+            get_size (out width, out height);
+            settings.set ("size", "(ii)", width, height);
         }
 
         return base.configure_event (event);
@@ -191,7 +246,7 @@ public class Window : Gtk.ApplicationWindow {
 
         Gtk.show_about_dialog (this,
                                "program-name", _("Clocks"),
-                               "logo-icon-name", "gnome-clocks",
+                               "logo-icon-name", "org.gnome.clocks",
                                "version", Config.VERSION,
                                "comments", _("Utilities to help you with the time."),
                                "copyright", copyright,

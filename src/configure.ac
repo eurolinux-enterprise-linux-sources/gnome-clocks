@@ -1,7 +1,7 @@
 AC_PREREQ(2.63)
 
 AC_INIT([gnome-clocks],
-        [3.14.1],
+        [3.22.1],
         [http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-clocks],
         [gnome-clocks])
 
@@ -16,9 +16,8 @@ AC_CONFIG_SRCDIR(src/main.vala)
 AM_INIT_AUTOMAKE([1.11 tar-ustar dist-xz no-dist-gzip foreign])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
-IT_PROG_INTLTOOL(0.40)
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.17])
+AM_GNU_GETTEXT_VERSION([0.19.8])
 GETTEXT_PACKAGE=AC_PACKAGE_NAME
 AC_SUBST([GETTEXT_PACKAGE])
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[The name of the gettext domain])
@@ -45,25 +44,26 @@ AC_PATH_PROG(GLIB_COMPILE_RESOURCES, glib-compile-resources)
 GLIB_GSETTINGS
 
 LT_INIT([disable-static])
+LT_LIB_M
 
 PKG_PROG_PKG_CONFIG([0.22])
 
 PKG_CHECK_MODULES(CLOCKS, [
-    gio-2.0 >= 2.36
-    glib-2.0 >= 2.39
-    gtk+-3.0 >= 3.9.11
-    libcanberra >= 0.30
+    gio-2.0 >= 2.44
+    glib-2.0 >= 2.44
+    gtk+-3.0 >= 3.19.8
+    gsound >= 0.98
     gweather-3.0 >= 3.13.91
     gnome-desktop-3.0 >= 3.7.90
     geocode-glib-1.0 >= 0.99.4
-    geoclue-2.0 >= 1.99.3
+    libgeoclue-2.0 >= 2.3.1
 ])
 
 YELP_HELP_INIT
 
 AC_CONFIG_FILES([
     Makefile
-    data/org.gnome.clocks.gschema.xml.in
+    data/org.gnome.clocks.gschema.xml
     help/Makefile
     po/Makefile.in
 ])

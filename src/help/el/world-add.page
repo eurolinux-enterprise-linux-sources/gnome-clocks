@@ -18,11 +18,21 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Προσθέστε ένα ρολόι για μια νέα πόλη στη λίστα παγκοσμίων ρολογιών.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
-      <mal:name> Παπαναστασίου Νικολέτα</mal:name>
+      <mal:name>Ελληνική μεταφραστική ομάδα GNOME</mal:name>
+      <mal:email>team@gnome.gr</mal:email>
+      <mal:years>2013</mal:years>
+    </mal:credit>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Παπαναστασίου Νικολέτα</mal:name>
       <mal:email>papa.nikoleta@ymail.com</mal:email>
       <mal:years>2013</mal:years>
     </mal:credit>
@@ -37,7 +47,7 @@
       <p>Πιέστε το κουμπί <gui style="button">Κόσμος</gui>.</p>
     </item>
     <item>
-      <p>Πιέστε το κουμπί <gui style="button">Νέα</gui> ή <keyseq><key>Ctrl</key><key>N</key></keyseq> για να προσθέσετε μία νέα πόλη.</p>
+      <p>Πιέστε το κουμπί <gui style="button">Νέο</gui> ή <keyseq><key>Ctrl</key><key>N</key></keyseq> για να προσθέσετε μία νέα πόλη.</p>
     </item>
     <item>
       <p>Ξεκινήστε να πληκτρολογείτε το όνομα της πόλης στην αναζήτηση.</p>
@@ -50,7 +60,7 @@
     </item>
   </steps>
 
-  <p>Αν δεν βλέπετε την πόλη σας στη λίστα, πιθανώς δεν είναι διαθέσιμη προς το παρόν. Προσπαθήστε αντί για αυτή να προσθέσετε την κοντινότερη μεγαλύτερη πόλη ή την πρωτεύουσα της χώρας σας.</p>
+  <p>Αν δεν βλέπετε την πόλη σας στη λίστα, πιθανώς να μην είναι διαθέσιμη προς το παρόν. Προσπαθήστε αντί για αυτή να προσθέσετε την κοντινότερη μεγαλύτερη πόλη ή την πρωτεύουσα της χώρας σας.</p>
 
   <note style="info">
     <p>Το ρολόι για την τρέχουσα τοποθεσία σας θα προστεθεί αυτόματα στα παγκόσμια ρολόγια σας όταν συνδεθείτε στο Διαδίκτυο. Δεν θα φαίνεται αν αποσυνδεθείτε από το Διαδίκτυο και θα ενημερωθεί αυτόματα αν μεταφέρετε τον υπολογιστή σας σε άλλη πόλη.</p>

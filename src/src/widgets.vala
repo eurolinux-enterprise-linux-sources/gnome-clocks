@@ -80,7 +80,11 @@ private class TitleRenderer : Gtk.CellRendererText {
         ICON_SIZE = 18;
     }
 
-    public override void render (Cairo.Context cr, Gtk.Widget widget, Gdk.Rectangle background_area, Gdk.Rectangle cell_area, Gtk.CellRendererState flags) {
+    public override void render (Cairo.Context cr,
+                                 Gtk.Widget widget,
+                                 Gdk.Rectangle background_area,
+                                 Gdk.Rectangle cell_area,
+                                 Gtk.CellRendererState flags) {
         base.render (cr, widget, cell_area, cell_area, flags);
 
         if (title_icon != null) {
@@ -108,11 +112,11 @@ private class TitleRenderer : Gtk.CellRendererText {
 
             Gtk.IconTheme icon_theme = Gtk.IconTheme.get_for_screen (Gdk.Screen.get_default ());
             try {
-                Gtk.IconInfo? icon_info = icon_theme.lookup_icon (title_icon, ICON_SIZE, 0);
+                Gtk.IconInfo? icon_info = icon_theme.lookup_icon_for_scale (title_icon, ICON_SIZE, widget.scale_factor, 0);
                 assert (icon_info != null);
 
-                Gdk.Pixbuf pixbuf = icon_info.load_icon ();
-                context.render_icon (cr, pixbuf, x, y);
+                Cairo.Surface surface = icon_info.load_surface (widget.get_window ());
+                Gtk.render_icon_surface (context, cr, surface, x, y);
             } catch (Error e) {
                 warning (e.message);
             }
@@ -139,7 +143,11 @@ private class DigitalClockRenderer : Gtk.CellRendererPixbuf {
     public DigitalClockRenderer () {
     }
 
-    public override void render (Cairo.Context cr, Gtk.Widget widget, Gdk.Rectangle background_area, Gdk.Rectangle cell_area, Gtk.CellRendererState flags) {
+    public override void render (Cairo.Context cr,
+                                 Gtk.Widget widget,
+                                 Gdk.Rectangle background_area,
+                                 Gdk.Rectangle cell_area,
+                                 Gtk.CellRendererState flags) {
         var context = widget.get_style_context ();
 
         context.save ();
@@ -160,11 +168,12 @@ private class DigitalClockRenderer : Gtk.CellRendererPixbuf {
             Gdk.Rectangle area = {margin, margin, TILE_SIZE, TILE_SIZE};
             base.render (cr, widget, area, area, flags);
         } else {
-            context.render_frame (cr, margin, margin, TILE_SIZE, TILE_SIZE);
             context.render_background (cr, margin, margin, TILE_SIZE, TILE_SIZE);
         }
+        context.render_frame (cr, margin, margin, TILE_SIZE, TILE_SIZE);
 
-        int w = cell_area.width - 2 * margin;
+        var border = context.get_border(context.get_state ());
+        int w = cell_area.width - 2 * margin - border.left - border.right;
 
         // create the layouts so that we can measure them
         var layout = widget.create_pango_layout ("");
@@ -194,7 +203,7 @@ private class DigitalClockRenderer : Gtk.CellRendererPixbuf {
 
         // draw the stripe background
         int stripe_h = 128;
-        int x = margin;
+        int x = margin + border.left;
         int y = (cell_area.height - stripe_h) / 2;
 
         context.add_class ("stripe");
@@ -227,6 +236,8 @@ private class DigitalClockRenderer : Gtk.CellRendererPixbuf {
 
             context.save ();
             context.add_class (Gtk.STYLE_CLASS_CHECK);
+            context.add_class ("clocks-digital-renderer-check");
+            context.add_class (css_class);
 
             if (checked) {
                 context.set_state (Gtk.StateFlags.CHECKED);
@@ -247,8 +258,166 @@ public interface ContentItem : GLib.Object {
     public abstract string name { get; set; }
     public abstract string title_icon { get; set; default = null; }
     public abstract bool selectable { get; set; default = true; }
+    public abstract bool selected { get; set; default = false; }
 
-    public abstract void get_thumb_properties (out string text, out string subtext, out Gdk.Pixbuf? pixbuf, out string css_class);
+    public abstract void get_thumb_properties (out string text,
+                                               out string subtext,
+                                               out Gdk.Pixbuf? pixbuf,
+                                               out string css_class);
+
+    public abstract void serialize (GLib.VariantBuilder builder);
+}
+
+public class ContentStore : GLib.Object, GLib.ListModel {
+    private ListStore store;
+    private CompareDataFunc sort_func;
+
+    public signal void selection_changed ();
+
+    public ContentStore () {
+        store = new ListStore (typeof (ContentItem));
+        store.items_changed.connect ((position, removed, added) => {
+            items_changed (position, removed, added);
+        });
+    }
+
+    public Type get_item_type () {
+        return store.get_item_type ();
+    }
+
+    public uint get_n_items () {
+        return store.get_n_items ();
+    }
+
+    public Object? get_item (uint position) {
+        return store.get_item (position);
+    }
+
+    public void set_sorting(owned CompareDataFunc sort) {
+        sort_func = (owned) sort;
+
+        // TODO: we should re-sort, but for now we only
+        // set this before adding any item
+        assert (store.get_n_items () == 0);
+    }
+
+    private void on_item_selection_toggle (Object o, ParamSpec p) {
+        selection_changed ();
+    }
+
+    public void add (ContentItem item) {
+        if (sort_func == null) {
+            store.append (item);
+        } else {
+            store.insert_sorted (item, sort_func);
+        }
+
+        item.notify["selected"].connect (on_item_selection_toggle);
+    }
+
+    public delegate void ForeachFunc(ContentItem item);
+
+    public void foreach(ForeachFunc func) {
+        var n = store.get_n_items ();
+        for (int i = 0; i < n; i++) {
+            func(store.get_object (i) as ContentItem);
+        }
+    }
+
+    public delegate bool FindFunc(ContentItem item);
+
+    public ContentItem? find(FindFunc func) {
+        var n = store.get_n_items ();
+        for (int i = 0; i < n; i++) {
+            var item = store.get_object (i) as ContentItem;
+            if (func (item)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public uint get_n_selected () {
+        uint n_selected = 0;
+        var n = store.get_n_items ();
+        for (int i = 0; i < n; i++) {
+            var item = store.get_object (i) as ContentItem;
+            if (item.selected) {
+                n_selected++;
+            }
+        }
+        return n_selected;
+    }
+
+    public void delete_selected () {
+        // remove everything and readd the ones not selected
+        uint n_deleted = 0;
+        Object[] not_selected = {};
+        var n = store.get_n_items ();
+        for (int i = 0; i < n; i++) {
+            var o = store.get_object (i);
+            if (!((ContentItem)o).selected) {
+                not_selected += o;
+            } else {
+                n_deleted++;
+                SignalHandler.disconnect_by_func (o, (void *)on_item_selection_toggle, (void *)this);
+            }
+        }
+
+        if (n_deleted > 0) {
+            store.splice(0, n, not_selected);
+            selection_changed ();
+        }
+    }
+
+    private void select_unselect_all (bool select) {
+        uint n_toggled = 0;
+
+        var n = store.get_n_items ();
+        for (int i = 0; i < n; i++) {
+            var item = store.get_object (i) as ContentItem;
+            var selected = item.selectable && select;
+            if (selected != item.selected) {
+                SignalHandler.block_by_func (item, (void *)on_item_selection_toggle, (void *)this);
+                item.selected = selected;
+                SignalHandler.unblock_by_func (item, (void *)on_item_selection_toggle, (void *)this);
+                n_toggled++;
+            }
+        }
+
+        if (n_toggled > 0) {
+            selection_changed ();
+        }
+    }
+
+    public void select_all () {
+        select_unselect_all (true);
+    }
+
+    public void unselect_all () {
+        select_unselect_all (false);
+    }
+
+    public Variant serialize () {
+        var builder = new GLib.VariantBuilder (new VariantType ("aa{sv}"));
+        var n = store.get_n_items ();
+        for (int i = 0; i < n; i++) {
+            var item = store.get_object (i) as ContentItem;
+            item.serialize (builder);
+        }
+        return builder.end ();
+    }
+
+    public delegate ContentItem? DeserializeItemFunc(Variant v);
+
+    public void deserialize (Variant variant, DeserializeItemFunc deserialize_item) {
+        foreach (var v in variant) {
+            ContentItem? i = deserialize_item (v);
+            if (i != null) {
+                add (i);
+            }
+        }
+    }
 }
 
 private class IconView : Gtk.IconView {
@@ -257,54 +426,30 @@ private class IconView : Gtk.IconView {
         SELECTION
     }
 
-    public enum Column {
-        SELECTED,
-        ITEM,
-        COLUMNS
-    }
-
-    public Mode mode {
-        get {
-            return _mode;
-        }
-
-        set {
-            if (_mode != value) {
-                _mode = value;
-                // clear selection
-                if (_mode != Mode.SELECTION) {
-                    unselect_all ();
-                }
-
-                thumb_renderer.toggle_visible = (_mode == Mode.SELECTION);
-                queue_draw ();
-            }
-        }
-    }
-
-    private Mode _mode;
-    private DigitalClockRenderer thumb_renderer;
+    public Mode mode { get; set; }
 
     public IconView () {
         Object (selection_mode: Gtk.SelectionMode.NONE, mode: Mode.NORMAL);
 
-        model = new Gtk.ListStore (Column.COLUMNS, typeof (bool), typeof (ContentItem));
+        model = new Gtk.ListStore (1, typeof (ContentItem));
 
         get_style_context ().add_class ("clocks-tiles-view");
+        get_style_context ().add_class ("content-view");
         set_item_padding (0);
         set_margin (12);
 
         var tile_width = DigitalClockRenderer.TILE_SIZE + 2 * DigitalClockRenderer.TILE_MARGIN;
-        var tile_height = DigitalClockRenderer.TILE_SIZE + DigitalClockRenderer.TILE_MARGIN + DigitalClockRenderer.TILE_MARGIN_BOTTOM;
+        var tile_height = DigitalClockRenderer.TILE_SIZE +
+                          DigitalClockRenderer.TILE_MARGIN +
+                          DigitalClockRenderer.TILE_MARGIN_BOTTOM;
 
-        thumb_renderer = new DigitalClockRenderer ();
+        var thumb_renderer = new DigitalClockRenderer ();
         thumb_renderer.set_alignment (0.5f, 0.5f);
         thumb_renderer.set_fixed_size (tile_width, tile_height);
         pack_start (thumb_renderer, false);
-        add_attribute (thumb_renderer, "checked", Column.SELECTED);
         set_cell_data_func (thumb_renderer, (column, cell, model, iter) => {
             ContentItem? item;
-            model.get (iter, IconView.Column.ITEM, out item);
+            model.get (iter, 0, out item);
             if (item != null) {
                 var renderer = (DigitalClockRenderer) cell;
                 string text;
@@ -313,6 +458,8 @@ private class IconView : Gtk.IconView {
                 string css_class;
                 item.get_thumb_properties (out text, out subtext, out pixbuf, out css_class);
                 renderer.selectable = item.selectable;
+                renderer.toggle_visible = (mode == Mode.SELECTION);
+                renderer.checked = item.selected;
                 renderer.text = text;
                 renderer.subtext = subtext;
                 renderer.pixbuf = pixbuf;
@@ -329,7 +476,7 @@ private class IconView : Gtk.IconView {
         pack_start (title_renderer, true);
         set_cell_data_func (title_renderer, (column, cell, model, iter) => {
             ContentItem? item;
-            model.get (iter, IconView.Column.ITEM, out item);
+            model.get (iter, 0, out item);
             if (item != null) {
                 var renderer = (TitleRenderer) cell;
                 renderer.title = GLib.Markup.escape_text (item.name);
@@ -341,25 +488,25 @@ private class IconView : Gtk.IconView {
     public override bool button_press_event (Gdk.EventButton event) {
         var path = get_path_at_pos ((int) event.x, (int) event.y);
         if (path != null) {
-            // On right click, swicth to selection mode automatically
-            if (event.button == Gdk.BUTTON_SECONDARY) {
-                mode = Mode.SELECTION;
-            }
+            var store = (Gtk.ListStore) model;
+            Gtk.TreeIter i;
+            if (store.get_iter (out i, path)) {
+                ContentItem item;
+                store.get (i, 0, out item);
+                if (item != null) {
+                    // On right click, swicth to selection mode automatically
+                    if (item.selectable && event.button == Gdk.BUTTON_SECONDARY) {
+                        mode = Mode.SELECTION;
+                    }
 
-            if (mode == Mode.SELECTION) {
-                var store = (Gtk.ListStore) model;
-                Gtk.TreeIter i;
-                if (store.get_iter (out i, path)) {
-                    bool selected;
-                    ContentItem item;
-                    store.get (i, Column.SELECTED, out selected, Column.ITEM, out item);
-                    if (item.selectable) {
-                        store.set (i, Column.SELECTED, !selected);
+                    if (item.selectable && mode == Mode.SELECTION) {
+                        item.selected = !item.selected;
                         selection_changed ();
+                        queue_draw ();
+                    } else if (event.button == Gdk.BUTTON_PRIMARY) {
+                        item_activated (path);
                     }
                 }
-            } else {
-                item_activated (path);
             }
         }
 
@@ -370,70 +517,53 @@ private class IconView : Gtk.IconView {
         var store = (Gtk.ListStore) model;
         Gtk.TreeIter i;
         store.append (out i);
-        store.set (i, Column.SELECTED, false, Column.ITEM, item);
+        store.set (i, 0, item);
     }
 
-    public void prepend (Object item) {
-        var store = (Gtk.ListStore) model;
-        Gtk.TreeIter i;
-        store.insert (out i, 0);
-        store.set (i, Column.SELECTED, false, Column.ITEM, item);
+    public new void clear () {
+        ((Gtk.ListStore) model).clear ();
     }
+}
 
-    // Redefine selection handling methods since we handle selection manually
-
-    public new List<Gtk.TreePath> get_selected_items () {
-        var items = new List<Gtk.TreePath> ();
-        model.foreach ((model, path, iter) => {
-            bool selected;
-            ((Gtk.ListStore) model).get (iter, Column.SELECTED, out selected);
-            if (selected) {
-                items.prepend (path);
-            }
-            return false;
-        });
-        items.reverse ();
-        return (owned) items;
-    }
-
-    public new void select_all () {
-        var model = get_model () as Gtk.ListStore;
-        model.foreach ((model, path, iter) => {
-            ContentItem? item;
-            ((Gtk.ListStore) model).get (iter, Column.ITEM, out item);
-            if (item != null && item.selectable) {
-                ((Gtk.ListStore) model).set (iter, Column.SELECTED, true);
-            }
-            return false;
-        });
-        selection_changed ();
-    }
-
-    public new void unselect_all () {
-        var model = get_model () as Gtk.ListStore;
-        model.foreach ((model, path, iter) => {
-            ((Gtk.ListStore) model).set (iter, Column.SELECTED, false);
-            return false;
-        });
-        selection_changed ();
-    }
-
-    public void remove_selected () {
-        var paths =  get_selected_items ();
-        paths.reverse ();
-        foreach (Gtk.TreePath path in paths) {
-            Gtk.TreeIter i;
-            if (((Gtk.ListStore) model).get_iter (out i, path)) {
-                ((Gtk.ListStore) model).remove (i);
+private class SelectionMenuButton : Gtk.MenuButton {
+    public uint n_items {
+        get {
+            return _n_items;
+        }
+        set {
+            if (_n_items != value) {
+                _n_items = value;
+                string label;
+                if (n_items == 0) {
+                    label = _("Click on items to select them");
+                } else {
+                    label = ngettext ("%d selected", "%d selected", n_items).printf (n_items);
+                }
+                menubutton_label.label = label;
             }
         }
-        selection_changed ();
+    }
+
+    private uint _n_items;
+    private Gtk.Label menubutton_label;
+
+    public SelectionMenuButton () {
+        var app = (Gtk.Application) GLib.Application.get_default ();
+        menu_model = app.get_menu_by_id ("selection-menu");
+        menubutton_label = new Gtk.Label (_("Click on items to select them"));
+        var arrow = new Gtk.Image.from_icon_name ("pan-down-symbolic", Gtk.IconSize.BUTTON);
+        var grid = new Gtk.Grid ();
+        grid.set_column_spacing (6);
+        grid.attach (menubutton_label, 0, 0, 1, 1);
+        grid.attach (arrow, 1, 0, 1, 1);
+        add (grid);
+        valign = Gtk.Align.CENTER;
+        get_style_context ().add_class ("selection-menu");
+        show_all ();
     }
 }
 
 public class ContentView : Gtk.Bin {
-    public bool empty { get; private set; default = true; }
-
     private bool can_select {
         get {
             return _can_select;
@@ -452,12 +582,11 @@ public class ContentView : Gtk.Bin {
     }
 
     private bool _can_select;
+    private ContentStore model;
     private IconView icon_view;
     private Gtk.Button select_button;
     private Gtk.Button cancel_button;
-    private GLib.MenuModel selection_menu;
-    private Gtk.MenuButton selection_menubutton;
-    private Gtk.Label selection_menubutton_label;
+    private SelectionMenuButton selection_menubutton;
     private Gtk.Grid grid;
     private Gtk.Button delete_button;
     private HeaderBar? header_bar;
@@ -486,7 +615,7 @@ public class ContentView : Gtk.Bin {
         delete_button.halign = Gtk.Align.END;
         delete_button.hexpand = true;
         delete_button.clicked.connect (() => {
-            delete_selected ();
+            model.delete_selected ();
             icon_view.mode = IconView.Mode.NORMAL;
         });
 
@@ -500,38 +629,14 @@ public class ContentView : Gtk.Bin {
             }
         });
 
-        icon_view.selection_changed.connect (() => {
-            var items = icon_view.get_selected_items ();
-            var n_items = items.length ();
-
-            string label;
-            if (n_items == 0) {
-                label = _("Click on items to select them");
-            } else {
-                label = ngettext ("%d selected", "%d selected", n_items).printf (n_items);
-            }
-            selection_menubutton_label.label = label;
-
-            if (n_items != 0) {
-                delete_button.sensitive = true;
-            } else {
-                delete_button.sensitive = false;
-            }
-        });
-
         icon_view.item_activated.connect ((path) => {
             var store = (Gtk.ListStore) icon_view.model;
-            Gtk.TreeIter i;
-            if (store.get_iter (out i, path)) {
-                if (icon_view.mode == IconView.Mode.SELECTION) {
-                    bool selected;
-                    store.get (i, IconView.Column.SELECTED, out selected);
-                    store.set (i, IconView.Column.SELECTED, !selected);
-                    icon_view.selection_changed ();
-                } else {
-                    Object item;
-                    store.get (i, IconView.Column.ITEM, out item);
-                    item_activated ((ContentItem) item);
+            Gtk.TreeIter iter;
+            if (store.get_iter (out iter, path)) {
+                ContentItem? item;
+                store.get (iter, 0, out item);
+                if (item != null) {
+                    item_activated (item);
                 }
             }
         });
@@ -542,91 +647,43 @@ public class ContentView : Gtk.Bin {
 
     public signal void item_activated (ContentItem item);
 
-    public virtual signal void delete_selected () {
-        icon_view.remove_selected ();
-        update_props_on_remove ();
-    }
+    public void bind_model (ContentStore store) {
+        model = store;
+        model.items_changed.connect ((position, removed, added) => {
+            var first_selectable = model.find ((i) => {
+                return i.selectable;
+            });
 
-    public void add_item (ContentItem item) {
-        icon_view.add_item (item);
-        update_props_on_insert (item);
-    }
+            can_select = first_selectable != null;
 
-    public void prepend (ContentItem item) {
-        icon_view.prepend (item);
-        update_props_on_insert (item);
-    }
+            // Just clear and repopulate the GtkTreeModel...
+            // it sucks, but there is no easy way to sync to a GListMode
+            // and we always have few items.
+            icon_view.clear ();
+            model.foreach ((item) => {
+                icon_view.add_item (item);
+            });
+        });
 
-    private void update_props_on_remove () {
-        Gtk.TreeIter iter;
+        model.selection_changed.connect (() => {
+            var n_items = model.get_n_selected ();
+            selection_menubutton.n_items = n_items;
 
-        var local_empty = true;
-        var local_can_select = false;
-        if (icon_view.model.get_iter_first (out iter)) {
-            local_empty = false;
-
-            // Looping is not efficient in theory, but in practice the only
-            // cases we have are:
-            //  - only the geolocation item
-            //  - at least one other item
-            // so we always break out of the loop at the first or second item
-            do {
-                ContentItem item;
-                icon_view.model.get (iter, IconView.Column.ITEM, out item);
-                if (item.selectable) {
-                   local_can_select = true;
-                   break;
-                }
-            } while (icon_view.model.iter_next (ref iter));
-        }
-
-        if (local_empty != empty) {
-            empty = local_empty;
-        }
-
-        if (local_can_select != can_select) {
-            can_select = local_can_select;
-        }
-    }
-
-    // We cannot connect to the row-inserted signal because the row is
-    // still empty so we cannot check item.selectable
-    private void update_props_on_insert (ContentItem item) {
-        if (empty) {
-            empty = false;
-        }
-        if (!can_select && item.selectable) {
-            can_select = true;
-        }
-    }
-
-    // Note: this is not efficient: we first walk the model to collect
-    // a list then the caller has to walk this list and then it has to
-    // delete the items from the view, which walks the model again...
-    // Our models are small enough that it does not matter and hopefully
-    // we will get rid of GtkListStore/GtkIconView soon.
-    public List<Object>? get_selected_items () {
-        var items = new List<Object> ();
-        var store = (Gtk.ListStore) icon_view.model;
-        foreach (Gtk.TreePath path in icon_view.get_selected_items ()) {
-            Gtk.TreeIter i;
-            if (store.get_iter (out i, path)) {
-                Object item;
-                store.get (i, IconView.Column.ITEM, out item);
-                items.prepend (item);
+            if (n_items != 0) {
+                delete_button.sensitive = true;
+            } else {
+                delete_button.sensitive = false;
             }
-        }
-        items.reverse ();
-        return (owned) items;
+        });
     }
 
     public void select_all () {
         icon_view.mode = IconView.Mode.SELECTION;
-        icon_view.select_all ();
+        model.select_all ();
     }
 
     public void unselect_all () {
-        icon_view.unselect_all ();
+        model.unselect_all ();
     }
 
     public bool escape_pressed () {
@@ -658,25 +715,14 @@ public class ContentView : Gtk.Bin {
         });
         header_bar.pack_end (cancel_button);
 
-        var app = (Gtk.Application) GLib.Application.get_default ();
-        selection_menu = app.get_menu_by_id ("selection-menu");
-        selection_menubutton = new Gtk.MenuButton ();
-        selection_menubutton_label = new Gtk.Label (_("Click on items to select them"));
-        var selection_menubutton_arrow = new Gtk.Image.from_icon_name ("pan-down-symbolic", Gtk.IconSize.BUTTON);
-        var selection_menubutton_grid = new Gtk.Grid ();
-        selection_menubutton_grid.set_column_spacing (6);
-        selection_menubutton_grid.attach (selection_menubutton_label, 0, 0, 1, 1);
-        selection_menubutton_grid.attach (selection_menubutton_arrow, 1, 0, 1, 1);
-        selection_menubutton.add (selection_menubutton_grid);
-        selection_menubutton.show_all();
-        selection_menubutton.valign = Gtk.Align.CENTER;
-        selection_menubutton.menu_model = selection_menu;
-        selection_menubutton.get_style_context ().add_class ("selection-menu");
+        selection_menubutton = new SelectionMenuButton ();
 
         icon_view.notify["mode"].connect (() => {
             if (icon_view.mode == IconView.Mode.SELECTION) {
                 header_bar.mode = HeaderBar.Mode.SELECTION;
             } else if (icon_view.mode == IconView.Mode.NORMAL) {
+                // clear current selection
+                icon_view.unselect_all ();
                 header_bar.mode = HeaderBar.Mode.NORMAL;
             }
         });
@@ -692,22 +738,6 @@ public class ContentView : Gtk.Bin {
             select_button.visible = can_select;
             break;
         }
-    }
-
-    public delegate int SortFunc(ContentItem item1, ContentItem item2);
-
-    public void set_sorting(Gtk.SortType sort_type, SortFunc sort_func) {
-        var sortable = icon_view.get_model () as Gtk.TreeSortable;
-        sortable.set_sort_column_id (1, sort_type);
-        sortable.set_sort_func (1, (model, iter1, iter2) => {
-            ContentItem item1;
-            ContentItem item2;
-
-            model.get (iter1, IconView.Column.ITEM, out item1);
-            model.get (iter2, IconView.Column.ITEM, out item2);
-
-            return sort_func (item1, item2);
-        });
     }
 }
 
@@ -759,7 +789,7 @@ public class AmPmToggleButton : Gtk.Button {
     }
 }
 
-public class AnalogFrame : Gtk.Frame {
+public class AnalogFrame : Gtk.Bin {
     protected const int LINE_WIDTH = 6;
     protected const int RADIUS_PAD = 48;
 
@@ -789,20 +819,7 @@ public class AnalogFrame : Gtk.Frame {
     }
 
     public override void size_allocate (Gtk.Allocation allocation) {
-        set_allocation (allocation);
-        var child = get_child ();
-        if (child != null && child.visible) {
-            int w, h;
-            child.get_preferred_width (out w, null);
-            child.get_preferred_height (out h, null);
-
-            Gtk.Allocation child_allocation = {};
-            child_allocation.x = allocation.x + (allocation.width - w) / 2;
-            child_allocation.y = allocation.y + (allocation.height - h) / 2;
-            child_allocation.width = w;
-            child_allocation.height =  h;
-            child.size_allocate (child_allocation);
-        }
+        base.size_allocate (allocation);
     }
 
     public override bool draw (Cairo.Context cr) {
@@ -824,7 +841,7 @@ public class AnalogFrame : Gtk.Frame {
         context.save ();
         context.add_class (Gtk.STYLE_CLASS_TROUGH);
 
-        var color = context.get_color (Gtk.StateFlags.NORMAL);
+        var color = context.get_color (context.get_state ());
 
         cr.set_line_width (LINE_WIDTH);
         Gdk.cairo_set_source_rgba (cr, color);

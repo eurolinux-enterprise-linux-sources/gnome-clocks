@@ -1,16 +1,16 @@
 # Italian translations for gnome-clocks package
-# Copyright (C) 2012, 2013, 2014 the gnome-clocks copyright holder
+# Copyright (C) 2012, 2013, 2014, 2015, 2016 the gnome-clocks copyright holder
 # This file is distributed under the same license as the gnome-clocks package.
 # Paolo Borelli <pborelli@gnome.org>, 2012.
-# Milo Casagrande <milo@ubuntu.com>, 2012, 2013, 2014.
+# Milo Casagrande <milo@ubuntu.com>, 2012, 2013, 2014, 2015, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-clocks\n"
-"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
-"product=clocks&keywords=I18N+L10N&component=general\n"
-"POT-Creation-Date: 2014-02-28 07:12+0000\n"
-"PO-Revision-Date: 2014-02-28 18:22+0100\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
+"clocks&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2016-08-18 16:52+0000\n"
+"PO-Revision-Date: 2016-10-03 12:19+0200\n"
 "Last-Translator: Milo Casagrande <milo@milo.name>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "Language: it\n"
@@ -18,9 +18,18 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.8.9\n"
 
-#: ../data/appdata/org.gnome.clocks.appdata.xml.h:1
+#: data/appdata/org.gnome.clocks.appdata.xml.in:6
+msgid "GNOME Clocks"
+msgstr "Orologi per GNOME"
+
+#: data/appdata/org.gnome.clocks.appdata.xml.in:7
+#: data/org.gnome.clocks.desktop.in:6
+msgid "Clocks for world times, plus alarms, stopwatch and a timer"
+msgstr "Orologi per i fusi orari nel mondo, sveglie, cronometro e un timer"
+
+#: data/appdata/org.gnome.clocks.appdata.xml.in:9
 msgid ""
 "A simple and elegant clock application. It includes world clocks, alarms, a "
 "stopwatch and a timer."
@@ -28,324 +37,395 @@ msgstr ""
 "Un orologio semplice ed elegante: comprende orologi da tutto il mondo, "
 "sveglie, un cronometro e un timer."
 
-#: ../data/appdata/org.gnome.clocks.appdata.xml.h:2
+#: data/appdata/org.gnome.clocks.appdata.xml.in:13
 msgid "Goals:"
 msgstr "Obiettivi:"
 
-#: ../data/appdata/org.gnome.clocks.appdata.xml.h:3
+#: data/appdata/org.gnome.clocks.appdata.xml.in:15
 msgid "Show the time in different cities around the world"
 msgstr "Mostrare l'ora di diverse città in tutto il mondo"
 
-#: ../data/appdata/org.gnome.clocks.appdata.xml.h:4
+#: data/appdata/org.gnome.clocks.appdata.xml.in:16
 msgid "Set alarms to wake you up"
 msgstr "Impostare sveglie"
 
-#: ../data/appdata/org.gnome.clocks.appdata.xml.h:5
+#: data/appdata/org.gnome.clocks.appdata.xml.in:17
 msgid "Measure elapsed time with an accurate stopwatch"
 msgstr "Misurare il tempo trascorso tramite un cronometro accurato"
 
-#: ../data/appdata/org.gnome.clocks.appdata.xml.h:6
+#: data/appdata/org.gnome.clocks.appdata.xml.in:18
 msgid "Set timers to properly cook your food"
 msgstr "Impostare timer per cucinare correttamente"
 
-#: ../data/org.gnome.clocks.desktop.in.h:1 ../src/window.vala:188
-#: ../data/ui/window.ui.h:1
-msgid "Clocks"
-msgstr "Orologi"
+#: data/gtk/help-overlay.ui:14
+msgctxt "shortcut window"
+msgid "General"
+msgstr "Generale"
 
-#: ../data/org.gnome.clocks.desktop.in.h:2
-msgid "GNOME Clocks"
-msgstr "Orologi per GNOME"
+#: data/gtk/help-overlay.ui:19
+msgctxt "shortcut window"
+msgid "Go to the next section"
+msgstr "Va alla sezione successiva"
 
-#: ../data/org.gnome.clocks.desktop.in.h:3
-msgid "Clocks for world times, plus alarms, stopwatch and a timer"
-msgstr "Orologi per i fusi orari nel mondo, sveglie, cronometro e un timer"
+#: data/gtk/help-overlay.ui:26
+msgctxt "shortcut window"
+msgid "Go to the previous section"
+msgstr "Va alla sezione precedente"
 
-#: ../data/org.gnome.clocks.desktop.in.h:4
-msgid "time;timer;alarm;world clock;stopwatch;time zone;"
-msgstr "ora;orario;tempo;orologio;cronometro;fuso orario;sveglia;allarme;"
+#: data/gtk/help-overlay.ui:33
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "Esce"
 
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:1
-msgid "Configured world clocks"
-msgstr "Orologi mondiali configurati"
+#: data/gtk/help-overlay.ui:42
+msgctxt "shortcut window"
+msgid "World Clocks"
+msgstr "Orologi mondiali"
 
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:2
-msgid "List of world clocks to show."
-msgstr "Elenco di orologi mondiali da mostrare."
+#: data/gtk/help-overlay.ui:47
+msgctxt "shortcut window"
+msgid "Add a world clock"
+msgstr "Aggiunge un nuovo orologio"
 
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:3
-msgid "Configured alarms"
-msgstr "Sveglie configurate"
+#: data/gtk/help-overlay.ui:54
+msgctxt "shortcut window"
+msgid "Select all world clocks"
+msgstr "Seleziona tutti gli orologi"
 
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:4
-msgid "List of alarms set."
-msgstr "Elenco di sveglie configurate."
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:5 ../src/timer.vala:107
-msgid "Timer"
-msgstr "Timer"
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:6
-msgid "Configured timer duration in seconds."
-msgstr "Durata del timer in secondi."
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:7
-msgid "Geolocation support"
-msgstr "Supporto geolocalizzazione"
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:8
-msgid "Turn geolocation support on and off."
-msgstr "Attiva e disattiva il supporto alla geolocalizzazione."
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:9
-msgid "Window state"
-msgstr "Stato della finestra"
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:10
-msgid "State of the window: i.e. maximized."
-msgstr "Lo stato della finestra, per esempio massimizzata."
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:11
-msgid "Window width and height"
-msgstr "Altezza e larghezza della finestra"
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:12
-msgid "Width and height of the window."
-msgstr "Larghezza e altezza della finestra."
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:13
-msgid "Panel state"
-msgstr "Stato del pannello"
-
-#: ../data/org.gnome.clocks.gschema.xml.in.in.h:14
-msgid "Current clock panel."
-msgstr "Pannello attualle dell'orologio."
-
-#: ../src/alarm.vala:115 ../src/alarm.vala:368 ../src/alarm.vala:542
+#: data/gtk/help-overlay.ui:63
+msgctxt "shortcut window"
 msgid "Alarm"
 msgstr "Sveglia"
 
-#: ../src/alarm.vala:117 ../src/stopwatch.vala:188 ../data/ui/alarm.ui.h:2
+#: data/gtk/help-overlay.ui:68
+msgctxt "shortcut window"
+msgid "Add an alarm"
+msgstr "Aggiunge una sveglia"
+
+#: data/gtk/help-overlay.ui:75
+msgctxt "shortcut window"
+msgid "Select all alarms"
+msgstr "Seleziona tutte le sveglie"
+
+#: data/gtk/help-overlay.ui:84
+msgctxt "shortcut window"
+msgid "Stopwatch"
+msgstr "Cronometro"
+
+#: data/gtk/help-overlay.ui:89
+msgctxt "shortcut window"
+msgid "Stop / Reset"
+msgstr "Interrompe / Azzera"
+
+#: data/gtk/help-overlay.ui:98
+msgctxt "shortcut window"
+msgid "Timer"
+msgstr "Timer"
+
+#: data/gtk/help-overlay.ui:103
+msgctxt "shortcut window"
+msgid "Reset"
+msgstr "Azzera"
+
+#: data/gtk/menus.ui:7
+msgid "_Keyboard Shortcuts"
+msgstr "_Scorciatoie da tastiera"
+
+#: data/gtk/menus.ui:12
+msgid "_Help"
+msgstr "A_iuto"
+
+#: data/gtk/menus.ui:17
+msgid "_About"
+msgstr "I_nformazioni"
+
+#: data/gtk/menus.ui:21
+msgid "_Quit"
+msgstr "_Esci"
+
+#: data/gtk/menus.ui:31
+msgid "Select All"
+msgstr "Seleziona tutto"
+
+#: data/gtk/menus.ui:36
+msgid "Select None"
+msgstr "Annulla selezione"
+
+#: data/org.gnome.clocks.desktop.in:3 data/org.gnome.clocks.desktop.in:4
+#: data/ui/window.ui:5 src/window.vala:235
+msgid "Clocks"
+msgstr "Orologi"
+
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/org.gnome.clocks.desktop.in:8
+msgid "time;timer;alarm;world clock;stopwatch;time zone;"
+msgstr "ora;orario;tempo;orologio;cronometro;fuso orario;sveglia;allarme;"
+
+#. Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+#: data/org.gnome.clocks.desktop.in:11
+msgid "org.gnome.clocks"
+msgstr "org.gnome.clocks"
+
+#: data/org.gnome.clocks.desktop.in:18
+msgid "Allows world clocks to be displayed for your time zone."
+msgstr "Consente di visualizzare orologi per il proprio fuso orario."
+
+#: data/org.gnome.clocks.gschema.xml.in:5
+msgid "Configured world clocks"
+msgstr "Orologi mondiali configurati"
+
+#: data/org.gnome.clocks.gschema.xml.in:6
+msgid "List of world clocks to show."
+msgstr "Elenco di orologi mondiali da mostrare."
+
+#: data/org.gnome.clocks.gschema.xml.in:12
+msgid "Configured alarms"
+msgstr "Sveglie configurate"
+
+#: data/org.gnome.clocks.gschema.xml.in:13
+msgid "List of alarms set."
+msgstr "Elenco di sveglie configurate."
+
+#: data/org.gnome.clocks.gschema.xml.in:19 src/timer.vala:113
+msgid "Timer"
+msgstr "Timer"
+
+#: data/org.gnome.clocks.gschema.xml.in:20
+msgid "Configured timer duration in seconds."
+msgstr "Durata del timer in secondi."
+
+#: data/org.gnome.clocks.gschema.xml.in:26
+msgid "Geolocation support"
+msgstr "Supporto geolocalizzazione"
+
+#: data/org.gnome.clocks.gschema.xml.in:27
+msgid "Turn geolocation support on and off."
+msgstr "Attiva e disattiva il supporto alla geolocalizzazione."
+
+#: data/org.gnome.clocks.gschema.xml.in:44
+msgid "Window state"
+msgstr "Stato della finestra"
+
+#: data/org.gnome.clocks.gschema.xml.in:45
+msgid "State of the window, e.g. maximized."
+msgstr "Lo stato della finestra, per esempio massimizzata."
+
+#: data/org.gnome.clocks.gschema.xml.in:51
+msgid "Window width and height"
+msgstr "Altezza e larghezza della finestra"
+
+#: data/org.gnome.clocks.gschema.xml.in:52
+msgid "Width and height of the window."
+msgstr "Larghezza e altezza della finestra."
+
+#: data/org.gnome.clocks.gschema.xml.in:58
+msgid "Panel state"
+msgstr "Stato del pannello"
+
+#: data/org.gnome.clocks.gschema.xml.in:59
+msgid "Current clock panel."
+msgstr "Pannello attualle dell'orologio."
+
+#: data/ui/alarmringing.ui:39 src/alarm.vala:119 src/stopwatch.vala:199
 msgid "Stop"
 msgstr "Interrompi"
 
-#: ../src/alarm.vala:118 ../data/ui/alarm.ui.h:3
+#: data/ui/alarmringing.ui:59 src/alarm.vala:120
 msgid "Snooze"
 msgstr "Ripeti"
 
-#: ../src/alarm.vala:308
+#: data/ui/alarmsetupdialog.ui:27 data/ui/worldlocationdialog.ui:17
+msgid "Add a New World Clock"
+msgstr "Aggiungi un nuovo orologio"
+
+#: data/ui/alarmsetupdialog.ui:31 data/ui/worldlocationdialog.ui:21
+msgid "_Cancel"
+msgstr "A_nnulla"
+
+#: data/ui/alarmsetupdialog.ui:47
+msgid "_Done"
+msgstr "_Fatto"
+
+#: data/ui/alarmsetupdialog.ui:199
+msgid "You already have an alarm for this time."
+msgstr "Una sveglia per quest'ora è già stata impostata."
+
+#: data/ui/alarmsetupdialog.ui:227
+msgid "Name"
+msgstr "Nome"
+
+#: data/ui/alarmsetupdialog.ui:241
+msgid "Repeat Every"
+msgstr "Ripetere ogni"
+
+# (ndt) switch on/off per, in teoria, una sveglia
+#: data/ui/alarmsetupdialog.ui:295
+msgid "Active"
+msgstr "Attivata"
+
+#: data/ui/alarm.ui:31
+msgid "Select <b>New</b> to add an alarm"
+msgstr "Scegliere <b>Nuovo</b> per aggiungere una sveglia"
+
+#: data/ui/stopwatch.ui:54 data/ui/timer.ui:194 src/stopwatch.vala:221
+msgid "Start"
+msgstr "Avvia"
+
+#: data/ui/stopwatch.ui:72 data/ui/timer.ui:415 src/stopwatch.vala:213
+msgid "Reset"
+msgstr "Azzera"
+
+#: data/ui/timer.ui:397 src/timer.vala:210 src/timer.vala:221
+msgid "Pause"
+msgstr "Pausa"
+
+#: data/ui/worldlocationdialog.ui:37
+msgid "_Add"
+msgstr "_Aggiungi"
+
+#: data/ui/worldlocationdialog.ui:76
+msgid "Search for a city:"
+msgstr "Cerca una città:"
+
+#: data/ui/world.ui:31
+msgid "Select <b>New</b> to add a world clock"
+msgstr ""
+"Scegliere <b>Nuovo</b> per aggiungere un orologio per una località nel mondo"
+
+#: data/ui/world.ui:122
+msgid "Sunrise"
+msgstr "Alba"
+
+#: data/ui/world.ui:136
+msgid "Sunset"
+msgstr "Tramonto"
+
+#: src/alarm.vala:117 src/alarm.vala:372 src/alarm.vala:545
+msgid "Alarm"
+msgstr "Sveglia"
+
+#: src/alarm.vala:313
 msgid "Edit Alarm"
 msgstr "Modifica sveglia"
 
-#: ../src/alarm.vala:308
+#: src/alarm.vala:313
 msgid "New Alarm"
 msgstr "Nuova sveglia"
 
 #. Translators: "New" refers to an alarm
 #. Translators: "New" refers to a world clock
-#: ../src/alarm.vala:565 ../src/world.vala:281
+#: src/alarm.vala:574 src/world.vala:280
 msgid "New"
 msgstr "Nuovo"
 
-#: ../src/application.vala:23
+#: src/application.vala:23
 msgid "Print version information and exit"
 msgstr "Stampa informazioni di versione ed esce"
 
-#: ../src/stopwatch.vala:130
+#: src/stopwatch.vala:139
 msgid "Stopwatch"
 msgstr "Cronometro"
 
-#: ../src/stopwatch.vala:191
+#: src/stopwatch.vala:202
 msgid "Lap"
 msgstr "Giro"
 
-#: ../src/stopwatch.vala:198 ../src/timer.vala:162
+#: src/stopwatch.vala:209 src/timer.vala:205
 msgid "Continue"
 msgstr "Continua"
 
-#: ../src/stopwatch.vala:202 ../data/ui/stopwatch.ui.h:2
-#: ../data/ui/timer.ui.h:3
-msgid "Reset"
-msgstr "Azzera"
-
-#: ../src/stopwatch.vala:210 ../data/ui/stopwatch.ui.h:1
-#: ../data/ui/timer.ui.h:1
-msgid "Start"
-msgstr "Avvia"
-
-#: ../src/timer.vala:116
+#: src/timer.vala:125
 msgid "Time is up!"
 msgstr "Tempo scaduto"
 
-#: ../src/timer.vala:117
+#: src/timer.vala:126
 msgid "Timer countdown finished"
 msgstr "Conto alla rovescia finito"
 
-#: ../src/timer.vala:167 ../src/timer.vala:178 ../data/ui/timer.ui.h:2
-msgid "Pause"
-msgstr "Pausa"
-
-#: ../src/utils.vala:163
+#: src/utils.vala:168
 msgid "Mondays"
 msgstr "Lunedì"
 
-#: ../src/utils.vala:164
+#: src/utils.vala:169
 msgid "Tuesdays"
 msgstr "Martedì"
 
-#: ../src/utils.vala:165
+#: src/utils.vala:170
 msgid "Wednesdays"
 msgstr "Mercoledì"
 
-#: ../src/utils.vala:166
+#: src/utils.vala:171
 msgid "Thursdays"
 msgstr "Giovedì"
 
-#: ../src/utils.vala:167
+#: src/utils.vala:172
 msgid "Fridays"
 msgstr "Venerdì"
 
-#: ../src/utils.vala:168
+#: src/utils.vala:173
 msgid "Saturdays"
 msgstr "Sabati"
 
-#: ../src/utils.vala:169
+#: src/utils.vala:174
 msgid "Sundays"
 msgstr "Domeniche"
 
-#: ../src/utils.vala:249
+#: src/utils.vala:254
 msgid "Every Day"
 msgstr "Tutti i giorni"
 
-#: ../src/utils.vala:251
+#: src/utils.vala:256
 msgid "Weekdays"
 msgstr "Giorni lavorativi"
 
-#: ../src/utils.vala:253
+#: src/utils.vala:258
 msgid "Weekends"
 msgstr "Giorni non lavorativi"
 
-#: ../src/widgets.vala:459
-msgid "Cancel"
-msgstr "Annulla"
-
-#: ../src/widgets.vala:471 ../src/widgets.vala:534
+#: src/widgets.vala:538 src/widgets.vala:553
 msgid "Click on items to select them"
 msgstr "Fare clic sugli elementi per selezionarli"
 
-#: ../src/widgets.vala:498
-msgid "Delete"
-msgstr "Elimina"
-
-#: ../src/widgets.vala:536
+#: src/widgets.vala:540
 #, c-format
 msgid "%d selected"
 msgid_plural "%d selected"
 msgstr[0] "%d selezionato"
 msgstr[1] "%d selezionati"
 
-#: ../src/window.vala:161
+#: src/widgets.vala:612
+msgid "Delete"
+msgstr "Elimina"
+
+#: src/widgets.vala:710
+msgid "Cancel"
+msgstr "Annulla"
+
+#: src/window.vala:208
 #, c-format
 msgid "Failed to show help: %s"
 msgstr "Visualizzazione della guida non riuscita: %s"
 
-#: ../src/window.vala:191
+#: src/window.vala:238
 msgid "Utilities to help you with the time."
 msgstr "Strumenti per controllare l'ora."
 
-#: ../src/window.vala:196
+#: src/window.vala:243
 msgid "translator-credits"
 msgstr ""
 "Milo Casagrande (milo@ubuntu.com)\n"
 "Paolo Borelli (pborelli@gnome.org)"
 
 #. If it is Dec 31st here and Jan 1st there (d = 1), then "tomorrow"
-#: ../src/world.vala:112 ../src/world.vala:115
+#: src/world.vala:108 src/world.vala:111
 msgid "Tomorrow"
 msgstr "Domani"
 
 #. If it is Jan 1st here and Dec 31st there (t = 1), then "yesterday"
-#: ../src/world.vala:112 ../src/world.vala:115
+#: src/world.vala:108 src/world.vala:111
 msgid "Yesterday"
 msgstr "Ieri"
 
-#: ../src/world.vala:272
+#: src/world.vala:258
 msgid "World"
 msgstr "Fusi orari"
-
-#. namespace World
-#. namespace Clocks
-#: ../data/ui/alarmsetupdialog.ui.h:1 ../data/ui/worldlocationdialog.ui.h:1
-msgid "Add a New World Clock"
-msgstr "Aggiungi un nuovo orologio"
-
-#: ../data/ui/alarmsetupdialog.ui.h:2 ../data/ui/worldlocationdialog.ui.h:2
-#| msgid "Cancel"
-msgid "_Cancel"
-msgstr "A_nnulla"
-
-#: ../data/ui/alarmsetupdialog.ui.h:3
-msgid "_Done"
-msgstr "_Fatto"
-
-#: ../data/ui/alarmsetupdialog.ui.h:4
-msgid "You already have an alarm for this time."
-msgstr "Una sveglia per quest'ora è già stata impostata."
-
-#: ../data/ui/alarmsetupdialog.ui.h:5
-msgid "Name"
-msgstr "Nome"
-
-#: ../data/ui/alarmsetupdialog.ui.h:6
-msgid "Repeat Every"
-msgstr "Ripetere ogni"
-
-# (ndt) switch on/off per, in teoria, una sveglia
-#: ../data/ui/alarmsetupdialog.ui.h:7
-msgid "Active"
-msgstr "Attivata"
-
-#: ../data/ui/alarm.ui.h:1
-msgid "Select <b>New</b> to add an alarm"
-msgstr "Scegliere <b>Nuovo</b> per aggiungere una sveglia"
-
-#: ../data/ui/menu.ui.h:1
-msgid "_Help"
-msgstr "A_iuto"
-
-#: ../data/ui/menu.ui.h:2
-msgid "_About"
-msgstr "I_nformazioni"
-
-#: ../data/ui/menu.ui.h:3
-msgid "_Quit"
-msgstr "_Esci"
-
-#: ../data/ui/menu.ui.h:4
-msgid "Select All"
-msgstr "Seleziona tutto"
-
-#: ../data/ui/menu.ui.h:5
-msgid "Select None"
-msgstr "Annulla selezione"
-
-#: ../data/ui/worldlocationdialog.ui.h:3
-msgid "_Add"
-msgstr "_Aggiungi"
-
-#: ../data/ui/worldlocationdialog.ui.h:4
-msgid "Search for a city:"
-msgstr "Cerca una città:"
-
-#: ../data/ui/world.ui.h:1
-msgid "Select <b>New</b> to add a world clock"
-msgstr ""
-"Scegliere <b>Nuovo</b> per aggiungere un orologio per una località nel mondo"
-
-#: ../data/ui/world.ui.h:2
-msgid "Sunrise"
-msgstr "Alba"
-
-#: ../data/ui/world.ui.h:3
-msgid "Sunset"
-msgstr "Tramonto"

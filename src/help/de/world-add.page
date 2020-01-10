@@ -18,13 +18,17 @@
       <email its:translate="no">kittykat3756@gmail.com</email>
       <years>2013</years>
     </credit>
+    <credit type="editor">
+      <name>Michael Hill</name>
+      <email its:translate="no">mdhillca@gmail.com</email>
+    </credit>
 
     <desc>Eine Uhr für eine neue Stadt zu Ihrer Liste von Weltuhren hinzufügen.</desc>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
       <mal:name>Christian Kirbach</mal:name>
       <mal:email>Christian.Kirbach@gmail.com</mal:email>
-      <mal:years>2013, 2014</mal:years>
+      <mal:years>2013, 2014, 2015</mal:years>
     </mal:credit>
   
     <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
@@ -59,7 +63,7 @@
   <p>Wenn Sie Ihren Ort nicht in der Liste sehen, ist er vermutlich noch nicht verfügbar. Sie können den nächst größeren Ort oder die Hauptstadt Ihres Landes auswählen.</p>
 
   <note style="info">
-    <p>Die Uhr für Ihren lokalen Standort wird automatisch den Weltuhren hinzugefügt, sobald Sie mit dem Internet verbunden sind. Sie wird nicht angezeigt, wenn die Verbindung mit dem Internet getrennt wird und sie wird automatisch aktualisiert, wenn Sie sich mit Ihrem Rechner in eine andere Stadt begeben.</p>
+    <p>Die Uhr für Ihren lokalen Standort wird automatisch den Weltuhren hinzugefügt, sobald Sie mit dem Internet verbunden sind. Sie wird nicht angezeigt, wenn die Verbindung mit dem Internet getrennt ist und sie wird automatisch aktualisiert, wenn Sie sich mit Ihrem Rechner in eine andere Stadt begeben.</p>
   </note>
 
 </page>
